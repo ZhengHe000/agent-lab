@@ -6,7 +6,7 @@ import math
 import datetime
 import os
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict
 
 
 @dataclass

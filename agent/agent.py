@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 import textwrap
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from .llm import LLMBase, MockLLM
 from .tools import DEFAULT_TOOLS, Tool
