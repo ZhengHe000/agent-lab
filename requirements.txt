@@ -1,0 +1,2 @@
+# Runtime dependency (only needed for the OpenAI backend)
+openai>=1.0.0
