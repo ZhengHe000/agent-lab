@@ -17,7 +17,7 @@ import (
 type Agent struct {
 	client  *http.Client
 	config  *Config
-	message []Message
+	messages []Message
 }
 
 type Message struct { // 消息结构体
@@ -29,7 +29,7 @@ func NewAgent(client *http.Client, config *Config) *Agent {
 	return &Agent{
 		client:  client,
 		config:  config,
-		message: []Message{{Role: "system", Content: config.Prompt}},
+		messages: []Message{{Role: "system", Content: config.Prompt}},
 	}
 }
 
@@ -96,10 +96,10 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 		timeoutStr = "60s"
 	}
 
-	request_timeout, err := time.ParseDuration(timeoutStr) // 转换超时配置
+	requestTimeout, err := time.ParseDuration(timeoutStr) // 转换超时配置
 	if err != nil {
 		log.Println("<超时>变量转换失败, 缺失变量为非关键值, 后续执行使用默认值")
-		request_timeout = 60 * time.Second
+		requestTimeout = 60 * time.Second
 	}
 
 	return &Config{
@@ -107,7 +107,7 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 		Model:           model,
 		AIAPIurl:        aiAPIurl,
 		Method:          method,
-		RequestTimeout: request_timeout,
+		RequestTimeout: requestTimeout,
 		Prompt:          prompt,
 	}
 }
@@ -132,25 +132,25 @@ func (a *Agent) callLLM(input string) (AIResponse, error) { //发送请求并处
 
 	input = strings.TrimSpace(input) // 对输入简单处理
 
-	a.message = append(a.message, Message{Role: "user", Content: input}) // 将输入加入上下文
+	a.messages = append(a.messages, Message{Role: "user", Content: input}) // 将输入加入上下文
 
 	reqBody := map[string]any{ // 组装请求体
-		"messages":    a.message,
+		"messages":    a.messages,
 		"model":       a.config.Model,
 		"temperature": 0.5,
 	}
 
 	data, err := json.Marshal(reqBody) //将请求体编码
 	if err != nil {
-		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
-		log.Println("call_llm内请求体编码失败, 返回原始err, 中断当前函数")
+		a.messages = a.messages[:len(a.messages)-1] // 错误时删除本次输入
+		log.Println("callLLM内请求体编码失败, 返回原始err, 中断当前函数")
 		return AIResponse{}, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, a.config.Method, a.config.AIAPIurl, bytes.NewReader(data)) // 创建完整请求
 	if err != nil {
-		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
-		log.Println("call_llm内请求创建失败, 返回原始err, 中断当前函数")
+		a.messages = a.messages[:len(a.messages)-1] // 错误时删除本次输入
+		log.Println("callLLM内请求创建失败, 返回原始err, 中断当前函数")
 		return AIResponse{}, err
 	}
 	req.Header.Set("Content-Type", "application/json")         // 告诉对方我发送的是json
@@ -159,48 +159,48 @@ func (a *Agent) callLLM(input string) (AIResponse, error) { //发送请求并处
 
 	res, err := a.client.Do(req) // 发送请求
 	if err != nil {
-		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
-		log.Println("call_llm内请求发送失败, 返回原始err, 中断当前函数")
+		a.messages = a.messages[:len(a.messages)-1] // 错误时删除本次输入
+		log.Println("callLLM内请求发送失败, 返回原始err, 中断当前函数")
 		return AIResponse{}, err
 	}
 	defer res.Body.Close()
 
 	if res.Body == nil {
-		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
+		a.messages = a.messages[:len(a.messages)-1] // 错误时删除本次输入
 		return AIResponse{}, fmt.Errorf("call_llm内响应体为空")
 	}
 
 	respBody, err := io.ReadAll(res.Body) // 读取响应请求体
 	if err != nil {
-		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
-		log.Println("call_llm内响应读取失败, 返回原始err, 中断当前函数")
+		a.messages = a.messages[:len(a.messages)-1] // 错误时删除本次输入
+		log.Println("callLLM内响应读取失败, 返回原始err, 中断当前函数")
 		return AIResponse{}, err
 	}
 
 	if res.StatusCode != http.StatusOK {
-		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
-		log.Println("call_llm内响应状态非正确, 返回err, 中断当前函数")
+		a.messages = a.messages[:len(a.messages)-1] // 错误时删除本次输入
+		log.Println("callLLM内响应状态非正确, 返回err, 中断当前函数")
 		return AIResponse{}, fmt.Errorf("响应状态异常, 得到状态: %d, 得到响应: %v", res.StatusCode, string(respBody))
 	}
 
 	var assistantSaid AIResponse
 	if err := json.Unmarshal(respBody, &assistantSaid); err != nil {
-		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
-		log.Println("call_llm内请求体解析失败, 返回err, 中断当前函数")
+		a.messages = a.messages[:len(a.messages)-1] // 错误时删除本次输入
+		log.Println("callLLM内请求体解析失败, 返回err, 中断当前函数")
 		return AIResponse{}, err
 	}
 
 	if len(assistantSaid.Choices) == 0 {
-		a.message = a.message[:len(a.message)-1]
+		a.messages = a.messages[:len(a.messages)-1]
 		return AIResponse{}, fmt.Errorf("API 响应成功, 但Choices为空")
 	}
 
 	if content := strings.TrimSpace(assistantSaid.Choices[0].Message.Content); content == "" {
-		a.message = a.message[:len(a.message)-1]
+		a.messages = a.messages[:len(a.messages)-1]
 		return AIResponse{}, fmt.Errorf("API 响应成功，但回复内容为空")
 	}
 
-	a.message = append(a.message, Message{
+	a.messages = append(a.messages, Message{
 		Role:    "assistant",
 		Content: assistantSaid.Choices[0].Message.Content,
 	}) // 将ai回复加入上下文
@@ -221,13 +221,13 @@ func main() {
 	fmt.Println("输入exit退出:")
 	scanners := bufio.NewScanner(os.Stdin) // 读取输入内容
 
-	var scannerChance int // 允许的错误计数
+	var requestFailureCount int // 允许的错误计数
 
 	for {
-		if scannerChance == 3 {
+		if requestFailureCount == 3 {
 			break
 		}
-
+		
 		if !scanners.Scan() {
 			break
 		}
@@ -240,7 +240,7 @@ func main() {
 
 		resp, err := agent.callLLM(input)
 		if err != nil {
-			scannerChance++
+			requestFailureCount++
 			log.Println(err)
 			continue
 		}
