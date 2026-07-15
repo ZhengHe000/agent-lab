@@ -54,7 +54,7 @@ func loadEnv(fileName string) error { // 配置环境变量
 type Config struct { // AIAPI请求变量
 	APIKey   string        `json:"apikey"`
 	Model    string        `json:"model"`
-	AIAPIurl string        `json:"apiurl`
+	AIAPIurl string        `json:"apiurl"`
 	Method   string        `json:"method"`
 	Timeout  time.Duration `json:"timeout"`
 	Prompt   string        `json:"prompt"`
@@ -176,7 +176,7 @@ func (a *Agent) call_llm(input string) (ResponseJSON, error) { //发送请求并
 
 	if res.StatusCode != http.StatusOK {
 		log.Println("call_llm内响应状态非正确, 返回err, 中断当前函数")
-		return ResponseJSON{}, fmt.Errorf("响应状态异常, 得到状态: %d", res.StatusCode)
+		return ResponseJSON{}, fmt.Errorf("响应状态异常, 得到状态: %d, 得到响应: %v", res.StatusCode, respBody)
 	}
 
 	var responseJson ResponseJSON
