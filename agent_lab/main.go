@@ -180,7 +180,7 @@ func (a *Agent) callLLM(input string) (AIResponse, error) { //发送请求并处
 	if res.StatusCode != http.StatusOK {
 		a.messages = a.messages[:len(a.messages)-1] // 错误时删除本次输入
 		log.Println("callLLM内响应状态非正确, 返回err, 中断当前函数")
-		return AIResponse{}, fmt.Errorf("响应状态异常, 得到状态: %d, 得到响应: %v", res.StatusCode, string(respBody))
+		return AIResponse{}, fmt.Errorf("响应状态异常, 得到状态: %d, 得到响应: %s", res.StatusCode, string(respBody))
 	}
 
 	var assistantSaid AIResponse
@@ -227,7 +227,7 @@ func main() {
 		if requestFailureCount == 3 {
 			break
 		}
-		
+
 		if !scanners.Scan() {
 			break
 		}
