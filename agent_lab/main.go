@@ -61,7 +61,7 @@ func loadEnv(fileName string) error { // 配置环境变量
 type Config struct { // AIAPI请求变量
 	APIKey          string        `json:"apikey"`
 	Model           string        `json:"model"`
-	AIAPIurl        string        `json:"apiurl"`
+	LLMAPIURL        string        `json:"apiurl"`
 	Method          string        `json:"method"`
 	RequestTimeout time.Duration `json:"timeout"`
 	Prompt          string        `json:"prompt"`
@@ -80,10 +80,10 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 		log.Println("未从环境中找到, MODELY装配失败, 缺失变量为非关键值, 后续执行使用默认值")
 		model = "deepseek-v4-pro"
 	}
-	aiAPIurl, exists := os.LookupEnv("AI_API_URL")
+	llmAPIURL, exists := os.LookupEnv("LLM_API_URL")
 	if !exists {
-		log.Println("未从环境中找到, AI_API_URL装配失败, 缺失变量为非关键值, 后续执行使用默认值")
-		aiAPIurl = "https://api.deepseek.com/chat/completions"
+		log.Println("未从环境中找到, LLM_API_URL装配失败, 缺失变量为非关键值, 后续执行使用默认值")
+		llmAPIURL = "https://api.deepseek.com/chat/completions"
 	}
 	prompt, exists := os.LookupEnv("SYSTEM_PROMPT")
 	if !exists {
@@ -105,7 +105,7 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 	return &Config{
 		APIKey:          key,
 		Model:           model,
-		AIAPIurl:        aiAPIurl,
+		LLMAPIURL:       llmAPIURL,
 		Method:          method,
 		RequestTimeout: requestTimeout,
 		Prompt:          prompt,
@@ -147,7 +147,7 @@ func (a *Agent) callLLM(input string) (AIResponse, error) { //发送请求并处
 		return AIResponse{}, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, a.config.Method, a.config.AIAPIurl, bytes.NewReader(data)) // 创建完整请求
+	req, err := http.NewRequestWithContext(ctx, a.config.Method, a.config.LLMAPIURL, bytes.NewReader(data)) // 创建完整请求
 	if err != nil {
 		a.messages = a.messages[:len(a.messages)-1] // 错误时删除本次输入
 		log.Println("callLLM内请求创建失败, 返回原始err, 中断当前函数")
