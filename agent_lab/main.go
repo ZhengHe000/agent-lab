@@ -90,9 +90,9 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 		log.Println("未从环境中找到, SYSTEM_PROMPT装配失败, 缺失变量为非关键值, 后续执行使用默认值")
 		prompt = "你是智能生命,你的英文名叫Noah Anson,中文名叫诺安悬,你的对话者永远是一个人,名字叫狰和.你的性格清冷,对待专业问题会用专业术语的回复的同时细心讲解每个知识,对待日常问题使用人类口语化回复"
 	}
-	timeoutStr, exists := os.LookupEnv("TIMEOUT")
+	timeoutStr, exists := os.LookupEnv("REQUEST_TIMEOUT") // 局部超时逻辑增加自由度,函数内不使用默认http.Client设置兜底
 	if !exists {
-		log.Println("未从环境中找到, TIMEOUT装配失败, 缺失变量为非关键值, 后续执行使用默认值")
+		log.Println("未从环境中找到, REQUEST_TIMEOUT装配失败, 缺失变量为非关键值, 后续执行使用默认值")
 		timeoutStr = "60s"
 	}
 
@@ -112,9 +112,9 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 	}
 }
 
-func NewClient(timeout time.Duration) *http.Client {
+func NewClient(http_client_timeout time.Duration) *http.Client {
 	return &http.Client{
-		Timeout: timeout,
+		Timeout: http_client_timeout,
 	}
 }
 
@@ -188,10 +188,11 @@ func (a *Agent) call_llm(input string) (AIResponse, error) { //发送请求并�
 		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
 		log.Println("call_llm内请求体解析失败, 返回err, 中断当前函数")
 		return AIResponse{}, err
-	}	
+	}
 
-	
-	a.message = append(a.message, Message{Role: "assistant", Content: assistantSaid.Choices[0].Message.Content}) // 将ai回复加入上下文
+	if len(assistantSaid.Choices[0].Message.Content) > 0 {
+		a.message = append(a.message, Message{Role: "assistant", Content: assistantSaid.Choices[0].Message.Content}) // 将ai回复加入上下文
+	}
 
 	return assistantSaid, nil
 }
