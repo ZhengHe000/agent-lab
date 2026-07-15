@@ -63,7 +63,7 @@ type Config struct { // AIAPI请求变量
 	Model           string        `json:"model"`
 	AIAPIurl        string        `json:"apiurl"`
 	Method          string        `json:"method"`
-	Request_timeout time.Duration `json:"timeout"`
+	RequestTimeout time.Duration `json:"timeout"`
 	Prompt          string        `json:"prompt"`
 }
 
@@ -107,14 +107,14 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 		Model:           model,
 		AIAPIurl:        aiAPIurl,
 		Method:          method,
-		Request_timeout: request_timeout,
+		RequestTimeout: request_timeout,
 		Prompt:          prompt,
 	}
 }
 
-func NewClient(http_client_timeout time.Duration) *http.Client {
+func NewClient(httpClientTimeout time.Duration) *http.Client {
 	return &http.Client{
-		Timeout: http_client_timeout,
+		Timeout: httpClientTimeout,
 	}
 }
 
@@ -126,8 +126,8 @@ type AIResponse struct { // 先只拿响应文本信息
 	} `json:"choices"`
 }
 
-func (a *Agent) call_llm(input string) (AIResponse, error) { //发送请求并处理响应
-	ctx, cancel := context.WithTimeout(context.Background(), a.config.Request_timeout) // 创建当前请求超时
+func (a *Agent) callLLM(input string) (AIResponse, error) { //发送请求并处理响应
+	ctx, cancel := context.WithTimeout(context.Background(), a.config.RequestTimeout) // 创建当前请求超时
 	defer cancel()
 
 	input = strings.TrimSpace(input) // 对输入简单处理
@@ -190,7 +190,7 @@ func (a *Agent) call_llm(input string) (AIResponse, error) { //发送请求并�
 		return AIResponse{}, err
 	}
 
-	if len(assistantSaid.Choices[0].Message.Content) == 0 {
+	if len(assistantSaid.Choices) == 0 {
 		a.message = a.message[:len(a.message)-1]
 		return AIResponse{}, fmt.Errorf("API 响应成功, 但Choices为空")
 	}
@@ -213,8 +213,8 @@ func main() {
 	fmt.Println("环境配置成功") // 提示
 
 	config := LoadConfig("POST")
-	http_client_timeout := 120 * time.Second
-	client := NewClient(http_client_timeout)
+	httpClientTimeout:= 120 * time.Second
+	client := NewClient(httpClientTimeout)
 
 	agent := NewAgent(client, config)
 
@@ -238,7 +238,7 @@ func main() {
 			break
 		}
 
-		resp, err := agent.call_llm(input)
+		resp, err := agent.callLLM(input)
 		if err != nil {
 			scannerChance++
 			log.Println(err)
