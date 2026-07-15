@@ -190,10 +190,20 @@ func (a *Agent) call_llm(input string) (AIResponse, error) { //发送请求并�
 		return AIResponse{}, err
 	}
 
-	if len(assistantSaid.Choices[0].Message.Content) > 0 {
-		a.message = append(a.message, Message{Role: "assistant", Content: assistantSaid.Choices[0].Message.Content}) // 将ai回复加入上下文
+	if len(assistantSaid.Choices[0].Message.Content) == 0 {
+		a.message = a.message[:len(a.message)-1]
+		return AIResponse{}, fmt.Errorf("API 响应成功, 但Choices为空")
 	}
 
+	if content := strings.TrimSpace(assistantSaid.Choices[0].Message.Content); content == "" {
+		a.message = a.message[:len(a.message)-1]
+		return AIResponse{}, fmt.Errorf("API 响应成功，但回复内容为空")
+	}
+
+	a.message = append(a.message, Message{
+		Role:    "assistant",
+		Content: assistantSaid.Choices[0].Message.Content,
+	}) // 将ai回复加入上下文
 	return assistantSaid, nil
 }
 func main() {
