@@ -203,8 +203,8 @@ func main() {
 	fmt.Println("环境配置成功") // 提示
 
 	config := LoadConfig("POST")
-	timeout := 120 * time.Second
-	client := NewClient(timeout)
+	http_client_timeout := 120 * time.Second
+	client := NewClient(http_client_timeout)
 
 	agent := NewAgent(client, config)
 
