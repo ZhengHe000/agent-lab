@@ -59,12 +59,12 @@ func loadEnv(fileName string) error { // 配置环境变量
 }
 
 type Config struct { // AIAPI请求变量
-	APIKey   string        `json:"apikey"`
-	Model    string        `json:"model"`
-	AIAPIurl string        `json:"apiurl"`
-	Method   string        `json:"method"`
-	Timeout  time.Duration `json:"timeout"`
-	Prompt   string        `json:"prompt"`
+	APIKey          string        `json:"apikey"`
+	Model           string        `json:"model"`
+	AIAPIurl        string        `json:"apiurl"`
+	Method          string        `json:"method"`
+	Request_timeout time.Duration `json:"timeout"`
+	Prompt          string        `json:"prompt"`
 }
 
 func LoadConfig(method string) *Config { // 装配AIAPI请求变量
@@ -96,19 +96,19 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 		timeoutStr = "60s"
 	}
 
-	timeout, err := time.ParseDuration(timeoutStr) // 转换超时配置
+	request_timeout, err := time.ParseDuration(timeoutStr) // 转换超时配置
 	if err != nil {
 		log.Println("<超时>变量转换失败, 缺失变量为非关键值, 后续执行使用默认值")
-		timeout = 60 * time.Second
+		request_timeout = 60 * time.Second
 	}
 
 	return &Config{
-		APIKey:   key,
-		Model:    model,
-		AIAPIurl: aiAPIurl,
-		Method:   method,
-		Timeout:  timeout,
-		Prompt:   prompt,
+		APIKey:          key,
+		Model:           model,
+		AIAPIurl:        aiAPIurl,
+		Method:          method,
+		Request_timeout: request_timeout,
+		Prompt:          prompt,
 	}
 }
 
@@ -127,7 +127,7 @@ type AIResponse struct { // 先只拿响应文本信息
 }
 
 func (a *Agent) call_llm(input string) (AIResponse, error) { //发送请求并处理响应
-	ctx, cancel := context.WithTimeout(context.Background(), a.config.Timeout) // 创建当前请求超时
+	ctx, cancel := context.WithTimeout(context.Background(), a.config.Request_timeout) // 创建当前请求超时
 	defer cancel()
 
 	input = strings.TrimSpace(input) // 对输入简单处理
