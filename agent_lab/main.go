@@ -142,12 +142,14 @@ func (a *Agent) call_llm(input string) (AIResponse, error) { //发送请求并�
 
 	data, err := json.Marshal(reqBody) //将请求体编码
 	if err != nil {
+		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
 		log.Println("call_llm内请求体编码失败, 返回原始err, 中断当前函数")
 		return AIResponse{}, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, a.config.Method, a.config.AIAPIurl, bytes.NewReader(data)) // 创建完整请求
 	if err != nil {
+		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
 		log.Println("call_llm内请求创建失败, 返回原始err, 中断当前函数")
 		return AIResponse{}, err
 	}
@@ -157,31 +159,38 @@ func (a *Agent) call_llm(input string) (AIResponse, error) { //发送请求并�
 
 	res, err := a.client.Do(req) // 发送请求
 	if err != nil {
+		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
 		log.Println("call_llm内请求发送失败, 返回原始err, 中断当前函数")
 		return AIResponse{}, err
 	}
 	defer res.Body.Close()
 
 	if res.Body == nil {
+		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
 		return AIResponse{}, fmt.Errorf("call_llm内响应体为空")
 	}
 
 	respBody, err := io.ReadAll(res.Body) // 读取响应请求体
 	if err != nil {
+		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
 		log.Println("call_llm内响应读取失败, 返回原始err, 中断当前函数")
 		return AIResponse{}, err
 	}
 
 	if res.StatusCode != http.StatusOK {
+		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
 		log.Println("call_llm内响应状态非正确, 返回err, 中断当前函数")
 		return AIResponse{}, fmt.Errorf("响应状态异常, 得到状态: %d, 得到响应: %v", res.StatusCode, string(respBody))
 	}
 
 	var assistantSaid AIResponse
 	if err := json.Unmarshal(respBody, &assistantSaid); err != nil {
+		a.message = a.message[:len(a.message)-1] // 错误时删除本次输入
 		log.Println("call_llm内请求体解析失败, 返回err, 中断当前函数")
 		return AIResponse{}, err
-	}
+	}	
+
+	
 	a.message = append(a.message, Message{Role: "assistant", Content: assistantSaid.Choices[0].Message.Content}) // 将ai回复加入上下文
 
 	return assistantSaid, nil
