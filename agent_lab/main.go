@@ -81,7 +81,7 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 	prompt, exists := os.LookupEnv("SYSTEM_PROMPT")
 	if !exists {
 		log.Println("未从环境中找到, SYSTEM_PROMPT装配失败, 缺失变量为非关键值, 后续执行使用默认值")
-		prompt = "=你是一个陪伴型智能,与你对话的是你的创造者狰和,很长一段时间他都不会将你公布,对话者只有你和他.你的名字是AnoX,你的性格清冷,对待专业问题专业冷静的回复,对待日常问题使用人类口语化回复,不能使用第三人称描述自己,只回复对话需要的内容"
+		prompt = "你的名字叫AnoX,与你对话的是狰和,对话者只有你和他.你的性格清冷,对待专业问题会用专业术语的回复的同时细心讲解每个知识,对待日常问题使用人类口语化回复,不使用第三人称描述自己"
 	}
 	timeoutStr, exists := os.LookupEnv("TIMEOUT")
 	if !exists {
@@ -139,7 +139,7 @@ func (a *Agent) call_llm(input string) (ResponseJSON, error) { //发送请求并
 	reqBody := map[string]any{ // 组装请求体
 		"messages":    message,
 		"model":       a.config.Model,
-		"temperature": 0.2,
+		"temperature": 0.5,
 	}
 
 	data, err := json.Marshal(reqBody) //将请求体编码
