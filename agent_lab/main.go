@@ -15,14 +15,21 @@ import (
 )
 
 type Agent struct {
-	client *http.Client
-	config *Config
+	client  *http.Client
+	config  *Config
+	message []Message
+}
+
+type Message struct { // 消息结构体
+	Role    string `json:"role"`
+	Content string `json:"content"`
 }
 
 func NewAgent(client *http.Client, config *Config) *Agent {
 	return &Agent{
-		client: client,
-		config: config,
+		client:  client,
+		config:  config,
+		message: []Message{{Role: "system", Content: config.Prompt}},
 	}
 }
 
@@ -111,7 +118,7 @@ func NewClient(timeout time.Duration) *http.Client {
 	}
 }
 
-type ResponseJSON struct { // 先只拿响应文本信息
+type AIResponse struct { // 先只拿响应文本信息
 	Choices []struct {
 		Message struct {
 			Content string `json:"content"`
@@ -119,25 +126,16 @@ type ResponseJSON struct { // 先只拿响应文本信息
 	} `json:"choices"`
 }
 
-func (a *Agent) call_llm(input string) (ResponseJSON, error) { //发送请求并处理响应
+func (a *Agent) call_llm(input string) (AIResponse, error) { //发送请求并处理响应
 	ctx, cancel := context.WithTimeout(context.Background(), a.config.Timeout) // 创建当前请求超时
 	defer cancel()
 
 	input = strings.TrimSpace(input) // 对输入简单处理
 
-	message := []any{ // 组装信息
-		map[string]string{
-			"content": a.config.Prompt,
-			"role":    "system",
-		},
-		map[string]string{
-			"content": input,
-			"role":    "user",
-		},
-	}
+	a.message = append(a.message, Message{Role: "user", Content: input}) // 将输入加入上下文
 
 	reqBody := map[string]any{ // 组装请求体
-		"messages":    message,
+		"messages":    a.message,
 		"model":       a.config.Model,
 		"temperature": 0.5,
 	}
@@ -145,13 +143,13 @@ func (a *Agent) call_llm(input string) (ResponseJSON, error) { //发送请求并
 	data, err := json.Marshal(reqBody) //将请求体编码
 	if err != nil {
 		log.Println("call_llm内请求体编码失败, 返回原始err, 中断当前函数")
-		return ResponseJSON{}, err
+		return AIResponse{}, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, a.config.Method, a.config.AIAPIurl, bytes.NewReader(data)) // 创建完整请求
 	if err != nil {
 		log.Println("call_llm内请求创建失败, 返回原始err, 中断当前函数")
-		return ResponseJSON{}, err
+		return AIResponse{}, err
 	}
 	req.Header.Set("Content-Type", "application/json")         // 告诉对方我发送的是json
 	req.Header.Set("Accept", "application/json")               // 希望对方响应json
@@ -160,32 +158,33 @@ func (a *Agent) call_llm(input string) (ResponseJSON, error) { //发送请求并
 	res, err := a.client.Do(req) // 发送请求
 	if err != nil {
 		log.Println("call_llm内请求发送失败, 返回原始err, 中断当前函数")
-		return ResponseJSON{}, err
+		return AIResponse{}, err
 	}
 	defer res.Body.Close()
 
 	if res.Body == nil {
-		return ResponseJSON{}, fmt.Errorf("call_llm内响应体为空")
+		return AIResponse{}, fmt.Errorf("call_llm内响应体为空")
 	}
 
 	respBody, err := io.ReadAll(res.Body) // 读取响应请求体
 	if err != nil {
 		log.Println("call_llm内响应读取失败, 返回原始err, 中断当前函数")
-		return ResponseJSON{}, err
+		return AIResponse{}, err
 	}
 
 	if res.StatusCode != http.StatusOK {
 		log.Println("call_llm内响应状态非正确, 返回err, 中断当前函数")
-		return ResponseJSON{}, fmt.Errorf("响应状态异常, 得到状态: %d, 得到响应: %v", res.StatusCode, respBody)
+		return AIResponse{}, fmt.Errorf("响应状态异常, 得到状态: %d, 得到响应: %v", res.StatusCode, string(respBody))
 	}
 
-	var responseJson ResponseJSON
-	if err := json.Unmarshal(respBody, &responseJson); err != nil {
+	var assistantSaid AIResponse
+	if err := json.Unmarshal(respBody, &assistantSaid); err != nil {
 		log.Println("call_llm内请求体解析失败, 返回err, 中断当前函数")
-		return ResponseJSON{}, err
+		return AIResponse{}, err
 	}
+	a.message = append(a.message, Message{Role: "assistant", Content: assistantSaid.Choices[0].Message.Content}) // 将ai回复加入上下文
 
-	return responseJson, nil
+	return assistantSaid, nil
 }
 func main() {
 	if err := loadEnv("agent_lab/.env.local"); err != nil { // 配置环境变量
