@@ -25,7 +25,7 @@ func (r *RuneTooLongError) Error()string {
 
 func validateContent(content string)error { // Content内容校验
 
-	if content = strings.TrimSpace(content); content == "" { // 判断是否为空
+	if strings.TrimSpace(content) == "" { // 判断是否为空
 		return ErrContentEmpty
 	}
 
