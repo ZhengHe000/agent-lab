@@ -46,7 +46,7 @@ func validateContent(content string)error { // Content内容校验
 	return nil
 }
 
-var filenameRule = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,99}\.txt$`) // 编译可复用的规则
+var filenameRule = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}\.txt$`) // 编译可复用的规则
 
 func validateFilename(filename string)error { // 文件名校验
 	if ! filenameRule.MatchString(filename) { //用正则表达式规则判断 传入值是否合规
