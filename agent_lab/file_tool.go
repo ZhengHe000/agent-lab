@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"unicode/utf8"
+	"strings"
 )
 
 type ByteTooLongError struct { // 字节过长错误
 	limit int
 	actual int 
 }
-func (t *TooLongError) Error()string {
+func (t *ByteTooLongError) Error()string {
 	return fmt.Sprintf("内容过长, 限制 %d 字节, 当前 %d 字节", t.limit, t.actual)
 }
 
@@ -23,7 +24,7 @@ func (r *RuneTooLongError) Error()string {
 
 func validateContent(content string)error { // 内容检验
 
-	if content = "" {
+	if content = strings.TrimSpace(content); content == "" { // 判断是否为空
 		return ErrContentEmpty
 	}
 
