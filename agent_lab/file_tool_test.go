@@ -70,11 +70,10 @@ func TestWriteTextFileInDirRejectsInvalidInput(t *testing.T) {
 		testName    string
 		useFilename string
 		useContent  string
-		wantErr     bool
 	}{
-		{testName: "禁止上级目录引用的文件名", useFilename: "../secret.txt", useContent: "hello", wantErr: true},
-		{testName: "非法文件后缀", useFilename: "note.md", useContent: "hello", wantErr: true},
-		{testName: "禁止内容为空的写入", useFilename: "note.txt", useContent: "    ", wantErr: true},
+		{testName: "禁止上级目录引用的文件名", useFilename: "../secret.txt", useContent: "hello"},
+		{testName: "非法文件后缀", useFilename: "note.md", useContent: "hello"},
+		{testName: "禁止内容为空的写入", useFilename: "note.txt", useContent: "    "},
 	}
 
 	for _, tc := range tests {
@@ -83,9 +82,9 @@ func TestWriteTextFileInDirRejectsInvalidInput(t *testing.T) {
 
 			gotFilePath, err := writeTextFileInDir(testDir, tc.useFilename, tc.useContent)
 
-			if (err != nil) != tc.wantErr {
-				t.Fatal("非法输入时，期望 writeTextFileInDir 返回错误，但实际没有错误")
-			}
+			if err == nil {
+	t.Fatal("非法输入时，期望 writeTextFileInDir 返回错误，但实际没有错误")
+}
 
 			if gotFilePath != "" {
 				t.Errorf("期望返回的路径为空, 实际得到: %q", gotFilePath)
