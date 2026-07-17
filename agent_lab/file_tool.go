@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-type ByteTooLongError struct { // 字节过长错误
+type ByteTooLongError struct { // ByteTooLongError 字节过长错误结构体原型
 	limit  int
 	actual int
 }
@@ -18,7 +18,7 @@ func (t *ByteTooLongError) Error() string {
 	return fmt.Sprintf("内容过长, 限制 %d 字节, 当前 %d 字节", t.limit, t.actual)
 }
 
-type RuneTooLongError struct { // 字符过长错误
+type RuneTooLongError struct { // RuneTooLongError 字符过长错误结构体原型
 	limit  int
 	actual int
 }
@@ -27,7 +27,7 @@ func (r *RuneTooLongError) Error() string {
 	return fmt.Sprintf("内容过长, 限制 %d 字符, 当前 %d 字符", r.limit, r.actual)
 }
 
-func validateContent(content string) error { // Content内容校验
+func validateContent(content string) error { // validateContent 对Content内容校验
 
 	if strings.TrimSpace(content) == "" { // 判断是否为空
 		return ErrContentEmpty
@@ -50,9 +50,9 @@ func validateContent(content string) error { // Content内容校验
 	return nil
 }
 
-var filenameRule = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}\.txt$`) // 编译可复用的规则
+var filenameRule = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}\.txt$`) // filenameRule 编译可复用的规则
 
-func validateFilename(filename string) error { // 文件名校验
+func validateFilename(filename string) error { // validateFilename 文件名校验
 
 	if strings.Contains(filename, "..") { // 排除文件名存在..(两个点)的错误项
 		return ErrInvalidFilename
@@ -65,7 +65,7 @@ func validateFilename(filename string) error { // 文件名校验
 	return nil
 }
 
-const workspaceDir = `./AIWorkspace` // 使用相对路径
+const workspaceDir = `./AIWorkspace` // workspaceDir 是正式文件工具使用的受控工作区
 func writeTextFile(filename string, content string) (string, error) { // writeTextFile 在受控工作目录中覆盖写入文本文件
 	return writeTextFileInDir(workspaceDir, filename, content)
 }
