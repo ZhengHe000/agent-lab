@@ -12,8 +12,8 @@ func TestValidateFilename(t *testing.T) {
 		{filename: "note.txt", wantErr: false},
 		{filename: "study-note_01.txt", wantErr: false},
 		{filename: "../secret.txt", wantErr: true},
-		{filename: "a/b.txt ", wantErr: true},
-		{filename: "my file.txt ", wantErr: true},
+		{filename: "a/b.txt", wantErr: true},
+		{filename: "my file.txt", wantErr: true},
 		{filename: "report.md", wantErr: true},
 	}
 
