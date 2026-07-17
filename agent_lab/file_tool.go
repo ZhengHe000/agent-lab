@@ -65,7 +65,8 @@ func validateFilename(filename string) error { // 文件名校验
 	return nil
 }
 
-func writeTextFile(filename string, content string) (string, error) { // 在指定路径下写入可变文件名和可变内容
+const workspaceDir = `./AIWorkspace`                 // 使用相对路径
+func writeTextFile(filename string, content string) (string, error) { // writeTextFile 在受控工作目录中覆盖写入文本文件
 	if err := validateFilename(filename); err != nil { // 检验文件名
 		return "", err
 	}
@@ -74,15 +75,14 @@ func writeTextFile(filename string, content string) (string, error) { // 在指�
 		return "", err
 	}
 
-	workspaceDir := `E:\myAgent\AIWorkspace`                 // 指定目录
 	if err := os.MkdirAll(workspaceDir, 0o755); err != nil { // 使用os.MkdirAll在指定盘创建完整目录
-		return "", ErrMkdirAll
+		return "", fmt.Errorf("%w, %w", ErrMkdirAll, err)
 	}
 
 	filePath := filepath.Join(workspaceDir, filename) // 拼出完整文件路径
 
 	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil { // 在指定路径写入指定内容
-		return "", ErrWriteFile
+		return "", fmt.Errorf("%w, %w", ErrWriteFile, err)
 	}
 
 	return filePath, nil // 返回文件路径和空
