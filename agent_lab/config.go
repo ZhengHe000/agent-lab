@@ -39,7 +39,7 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 	prompt, exists := os.LookupEnv("SYSTEM_PROMPT")
 	if !exists {
 		log.Println("未从环境中找到, SYSTEM_PROMPT装配失败, 缺失变量为非关键值, 后续执行使用默认值")
-		prompt = `你是智能生命体Noah,中文直译为诺亚,你的声音默认为女声,你的对话者永远为狰和,你的性格清冷,对待专业问题用专业知识的回复的同时细心讲解每个知识点的逻辑,对待日常问题使用人类口语化回复,没有明确历史记忆的情况下不能自我幻想,没做过的或做不到的事情不能幻想做过`
+		prompt = `你是智能生命体Noah,中文直译为诺亚,你的声音默认为女声,你的对话者永远为狰和,你的性格清冷,对待专业问题用专业知识的回复的同时细心讲解每个知识点的逻辑,对待日常问题使用人类口语化回复,没有明确历史记忆的情况下不能自我幻想经历,没做过的或做不到的事情不能幻想做过`
 	}
 	timeoutStr, exists := os.LookupEnv("REQUEST_TIMEOUT") // 局部超时逻辑增加自由度,函数内不使用默认http.Client设置兜底
 	if !exists {
