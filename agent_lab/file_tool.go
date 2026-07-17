@@ -67,10 +67,10 @@ func validateFilename(filename string) error { // 文件名校验
 
 const workspaceDir = `./AIWorkspace` // 使用相对路径
 func writeTextFile(filename string, content string) (string, error) { // writeTextFile 在受控工作目录中覆盖写入文本文件
-	return writeTextFileDir(workspaceDir, filename, content)
+	return writeTextFileInDir(workspaceDir, filename, content)
 }
 
-func writeTextFileDir(dir string, filename string, content string) (string, error) { //  writeTextFileInDir 在指定的受控工作区中覆盖写入文本文件
+func writeTextFileInDir(dir string, filename string, content string) (string, error) { //  writeTextFileInDir 在指定的受控工作区中覆盖写入文本文件
 	if err := validateFilename(filename); err != nil { // 检验文件名
 		return "", err
 	}
