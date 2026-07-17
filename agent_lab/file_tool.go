@@ -33,10 +33,10 @@ func validateContent(content string) error { // Content内容校验
 		return ErrContentEmpty
 	}
 
-	if charcter := utf8.RuneCountInString(content); charcter > 10000 { // 判断字符
+	if characterCount := utf8.RuneCountInString(content); characterCount > 10000 { // 判断字符
 		return &RuneTooLongError{
 			limit:  10000,
-			actual: charcter,
+			actual: characterCount,
 		}
 	}
 
@@ -65,8 +65,12 @@ func validateFilename(filename string) error { // 文件名校验
 	return nil
 }
 
-const workspaceDir = `./AIWorkspace`                 // 使用相对路径
+const workspaceDir = `./AIWorkspace` // 使用相对路径
 func writeTextFile(filename string, content string) (string, error) { // writeTextFile 在受控工作目录中覆盖写入文本文件
+	return writeTextFileDir(workspaceDir, filename, content)
+}
+
+func writeTextFileDir(dir string, filename string, content string) (string, error) { //  writeTextFileInDir 在指定的受控工作区中覆盖写入文本文件
 	if err := validateFilename(filename); err != nil { // 检验文件名
 		return "", err
 	}
@@ -75,14 +79,14 @@ func writeTextFile(filename string, content string) (string, error) { // writeTe
 		return "", err
 	}
 
-	if err := os.MkdirAll(workspaceDir, 0o755); err != nil { // 使用os.MkdirAll在指定盘创建完整目录
-		return "", fmt.Errorf("%w, %w", ErrMkdirAll, err)
+	if err := os.MkdirAll(dir, 0o755); err != nil { // 使用os.MkdirAll在指定盘创建完整目录
+		return "", fmt.Errorf("%w: %w", ErrMkdirAll, err)
 	}
 
-	filePath := filepath.Join(workspaceDir, filename) // 拼出完整文件路径
+	filePath := filepath.Join(dir, filename) // 拼出完整文件路径
 
 	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil { // 在指定路径写入指定内容
-		return "", fmt.Errorf("%w, %w", ErrWriteFile, err)
+		return "", fmt.Errorf("%w: %w", ErrWriteFile, err)
 	}
 
 	return filePath, nil // 返回文件路径和空
