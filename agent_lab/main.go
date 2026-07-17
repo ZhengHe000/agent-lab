@@ -13,7 +13,7 @@ func main() {
 	if err := loadEnv("agent_lab/.env.local"); err != nil { // 配置环境变量
 		log.Fatalf("设置环境变量失败, 后续未执行. 详情: %s", err)
 	}
-	fmt.Println("环境配置成功") // 提示
+	log.Println("环境配置成功") // 提示
 
 	config := LoadConfig("POST")
 	httpClientTimeout := 120 * time.Second
@@ -49,7 +49,7 @@ func main() {
 		}
 
 		if len(resp.Choices) > 0 {
-			fmt.Printf("AI: %s\n", resp.Choices[0].Message.Content)
+			fmt.Printf("-<Noah>-  %s\n", resp.Choices[0].Message.Content)
 		}
 	}
 
