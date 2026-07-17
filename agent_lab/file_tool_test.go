@@ -83,17 +83,21 @@ func TestWriteTextFileInDirRejectsInvalidInput(t *testing.T) {
 
 			gotFilePath, err := writeTextFileInDir(testDir, tc.useFilename, tc.useContent)
 
+			if (err != nil) != tc.wantErr {
+				t.Fatal("非法输入时，期望 writeTextFileInDir 返回错误，但实际没有错误")
+			}
+
 			if gotFilePath != "" {
 				t.Errorf("期望返回的路径为空, 实际得到: %q", gotFilePath)
 			}
 
-			entries, err := os.ReadFile(testDir)
-			if err == nil {
-				t.Fatalf("调用 os.ReadFile 时未触发异常")
+			entries, err := os.ReadDir(testDir)
+			if err != nil {
+				t.Fatalf("调用 os.ReadDir 时异常, 错误: %v", err)
 			}
 
 			if len(entries) != 0 {
-				t.Errorf("效输入已创建文件: %v", entries)
+				t.Errorf("非法输入创建了文件或目录: %v", entries)
 			}
 		})
 	}
