@@ -15,13 +15,14 @@ func TestValidateFilename(t *testing.T) {
 		{filename: "a/b.txt", wantErr: true},
 		{filename: "my file.txt", wantErr: true},
 		{filename: "report.md", wantErr: true},
+		{filename: "a..b.txt", wantErr: true},
 	}
 
 	for i, tt := range tests {
 		err := validateFilename(tt.filename)
 
 		if (err != nil) != tt.wantErr {
-			t.Errorf("case: %d, Filename: %s, Want: %t, Got: %t, err: %s", i, tt.filename, tt.wantErr, (err != nil), err)
+			t.Errorf("case: %d, Filename: %s, Want: %t, Got: %t, err: %v", i, tt.filename, tt.wantErr, (err != nil), err)
 		}
 	}
 }
