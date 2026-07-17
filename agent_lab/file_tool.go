@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -52,7 +54,7 @@ var filenameRule = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}\.txt$`) 
 
 func validateFilename(filename string) error { // 文件名校验
 
-	if strings.Contains(filename, "..") { // 排除文件名存在..的错误项
+	if strings.Contains(filename, "..") { // 排除文件名存在..(两个点)的错误项
 		return ErrInvalidFilename
 	}
 
@@ -61,4 +63,27 @@ func validateFilename(filename string) error { // 文件名校验
 	}
 
 	return nil
+}
+
+func writeTextFile(filename string, content string) (string, error) { // 在指定路径下写入可变文件名和可变内容
+	if err := validateFilename(filename); err != nil { // 检验文件名
+		return "", err
+	}
+
+	if err := validateContent(content); err != nil { // 检验写入内容
+		return "", err
+	}
+
+	workspaceDir := `E:\myAgent\AIWorkspace`                 // 指定目录
+	if err := os.MkdirAll(workspaceDir, 0o755); err != nil { // 使用os.MkdirAll在指定盘创建完整目录
+		return "", ErrMkdirAll
+	}
+
+	filePath := filepath.Join(workspaceDir, filename) // 拼出完整文件路径
+
+	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil { // 在指定路径写入指定内容
+		return "", ErrWriteFile
+	}
+
+	return filePath, nil // 返回文件路径和空
 }
