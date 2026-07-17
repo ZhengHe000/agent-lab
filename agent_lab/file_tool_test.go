@@ -64,3 +64,37 @@ func TestWriteTextFileInDir(t *testing.T) {
 		t.Errorf("<记录> writeTextFileInDir对测试路径下的文件写入内容与期望不匹配, Want: %s, Got: %s", "updated", got)
 	}
 }
+
+func TestWriteTextFileInDirRejectsInvalidInput(t *testing.T) {
+	tests := []struct {
+		testName    string
+		useFilename string
+		useContent  string
+		wantErr     bool
+	}{
+		{testName: "禁止上级目录引用的文件名", useFilename: "../secret.txt", useContent: "hello", wantErr: true},
+		{testName: "非法文件后缀", useFilename: "note.md", useContent: "hello", wantErr: true},
+		{testName: "禁止内容为空的写入", useFilename: "note.txt", useContent: "    ", wantErr: true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.testName, func(t *testing.T) {
+			testDir := t.TempDir()
+
+			gotFilePath, err := writeTextFileInDir(testDir, tc.useFilename, tc.useContent)
+
+			if gotFilePath != "" {
+				t.Errorf("期望返回的路径为空, 实际得到: %q", gotFilePath)
+			}
+
+			entries, err := os.ReadFile(testDir)
+			if err == nil {
+				t.Fatalf("调用 os.ReadFile 时未触发异常")
+			}
+
+			if len(entries) != 0 {
+				t.Errorf("效输入已创建文件: %v", entries)
+			}
+		})
+	}
+}
