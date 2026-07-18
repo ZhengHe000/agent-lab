@@ -130,26 +130,22 @@ func confirmWrite(
 
 	scanner := bufio.NewScanner(reader) // 创建扫描器
 
-	for {
-
-		if !scanner.Scan() { // 阻塞程序直到得到输入 + 错误处理
-			if err := scanner.Err(); err != nil {
-				return false, fmt.Errorf("读取确认输入失败: %w", err)
-			}
-			return false, fmt.Errorf("未读取到确认输入")
+	if !scanner.Scan() { // 阻塞程序直到得到输入 + 错误处理
+		if err := scanner.Err(); err != nil {
+			return false, fmt.Errorf("读取确认输入失败: %w", err)
 		}
-
-		decision := strings.TrimSpace(scanner.Text()) // 接收输入
-
-		switch decision { // 筛选输入
-		case "y", "Y":
-			return true, nil
-		case "n", "N":
-			return false, nil
-		default:
-			return false, ErrInvalidInput
-		}
+		return false, fmt.Errorf("未读取到确认输入")
 	}
 
-	return false, fmt.Errorf("函数: confirmWrite 出现未知问题导致执行到此, 此处为兜底策略 默认拒绝") // 默认拒绝行为
+	decision := strings.TrimSpace(scanner.Text()) // 接收输入
+
+	switch decision { // 筛选输入
+	case "y", "Y":
+		return true, nil
+	case "n", "N":
+		return false, nil
+	default:
+		return false, ErrInvalidInput
+	}
+
 }
