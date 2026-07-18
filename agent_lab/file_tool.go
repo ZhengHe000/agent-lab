@@ -156,21 +156,20 @@ func confirmAndWriteTextFile( //组装file_tool使用流程
 	content string,
 ) (string, error) {
 	if err := validateFilename(filename); err != nil { // 使用文件名校验
-		return err
+		return "", err
 	}
 
 	if err := validateContent(content); err != nil { // 使用文件内容校验
-		return err
+		return "", err
 	}
 
 	confirmed, err := confirmWrite(reader, writer, filename, content) // 进行确认
+	if err != nil {
+		return "", err
+	}
 
 	if !confirmed { // 拒绝或异常时中断函数
 		return "", ErrWriteCancelled
-	}
-
-	if err != nil {
-		return "", err
 	}
 
 	return writeTextFile(filename, content) // 调用写入函数, 返回string 和 error
