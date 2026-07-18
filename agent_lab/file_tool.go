@@ -155,6 +155,22 @@ func confirmAndWriteTextFile( //组装file_tool使用流程
 	filename string,
 	content string,
 ) (string, error) {
+	return confirmAndWriteTextFileInDir(
+		workspaceDir,
+		reader,
+		writer,
+		filename,
+		content,
+	)
+}
+
+func confirmAndWriteTextFileInDir(
+	dir string,
+	reader io.Reader,
+	writer io.Writer,
+	filename string,
+	content string,
+) (string, error) {
 	if err := validateFilename(filename); err != nil { // 使用文件名校验
 		return "", err
 	}
@@ -172,5 +188,5 @@ func confirmAndWriteTextFile( //组装file_tool使用流程
 		return "", ErrWriteCancelled
 	}
 
-	return writeTextFile(filename, content) // 调用写入函数, 返回string 和 error
+	return writeTextFileInDir(dir, filename, content) // 调用写入函数, 返回string 和 error
 }
