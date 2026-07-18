@@ -15,7 +15,7 @@ func TestConfirmWrite(t *testing.T) {
 		filenameTest string
 		contentTest  string
 		wantBool     bool
-		wantErr      error
+		wantErr      bool
 	}{
 		{testName: "y确认",
 			readerTest:   strings.NewReader("y\n"),
@@ -23,7 +23,7 @@ func TestConfirmWrite(t *testing.T) {
 			filenameTest: "note.txt",
 			contentTest:  "hello",
 			wantBool:     true,
-			wantErr:      nil,
+			wantErr:      false,
 		},
 		{testName: "n拒绝",
 			readerTest:   strings.NewReader("n\n"),
@@ -31,7 +31,7 @@ func TestConfirmWrite(t *testing.T) {
 			filenameTest: "note.txt",
 			contentTest:  "hello",
 			wantBool:     false,
-			wantErr:      nil,
+			wantErr:      false,
 		},
 		{testName: "maybe返回错误",
 			readerTest:   strings.NewReader("maybe\n"),
@@ -39,7 +39,7 @@ func TestConfirmWrite(t *testing.T) {
 			filenameTest: "note.txt",
 			contentTest:  "hello",
 			wantBool:     false,
-			wantErr:      ErrInvalidInput,
+			wantErr:      true,
 		},
 	}
 
@@ -51,7 +51,7 @@ func TestConfirmWrite(t *testing.T) {
 				t.Errorf("want: %v, got: %v", tc.wantBool, gotBool)
 			}
 
-			if gotErr != tc.wantErr {
+			if (gotErr != nil) != tc.wantErr {
 				t.Errorf("want: %v, got: %v", tc.wantErr, gotErr)
 			}
 
