@@ -102,15 +102,14 @@ func confirmWrite(
 ) (bool, error) {
 
 	//设置模板
-	const promptTemplate = `
-	即将覆盖写入文件。
+	const promptTemplate = `即将覆盖写入文件。
 
-	文件名：%s
-	内容长度：%d 字符，%d 字节
-	内容预览：
-	%s
+文件名：%s
+内容长度：%d 字符，%d 字节
+内容预览：
+%s
 
-	确认写入？请输入 y 或 n:`
+确认写入？请输入 y 或 n:`
 
 	characterCount := utf8.RuneCountInString(content) // 计算字符数
 	byteCount := len(content)                         // 计算字节数
@@ -145,7 +144,34 @@ func confirmWrite(
 	case "n", "N":
 		return false, nil
 	default:
-		return false, ErrInvalidInput
+		return false, fmt.Errorf("无效确认输入 %q,请输入 y 或 n", decision)
 	}
 
+}
+
+func confirmAndWriteTextFile( //组装file_tool使用流程
+	reader io.Reader,
+	writer io.Writer,
+	filename string,
+	content string,
+) (string, error) {
+	if err := validateFilename(filename); err != nil { // 使用文件名校验
+		return err
+	}
+
+	if err := validateContent(content); err != nil { // 使用文件内容校验
+		return err
+	}
+
+	confirmed, err := confirmWrite(reader, writer, filename, content) // 进行确认
+
+	if !confirmed { // 拒绝或异常时中断函数
+		return "", ErrWriteCancelled
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return writeTextFile(filename, content) // 调用写入函数, 返回string 和 error
 }

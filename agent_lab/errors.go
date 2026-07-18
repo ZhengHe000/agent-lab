@@ -17,6 +17,6 @@ var (
 	// 使用os.WriteFile时 应该返回的错误, 如果想看原始错误信息应该在编写函数时 使用其他办法收集 例如使用日志 或 fmt.Errorf("%w %w",ErrWriteFile, err)
 	ErrWriteFile = errors.New("错误, 因为过程中用错误的参数调用了os.WriteFile函数")
 
-	// 确认提示函数无效输入时使用的错误
-	ErrInvalidInput = errors.New("错误, 因为使用无效确认输入 请输入 y 或 n")
+	// 选择取消操作时返回此错误
+	ErrWriteCancelled = errors.New("取消写入操作")
 )
