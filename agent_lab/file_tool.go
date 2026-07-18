@@ -144,7 +144,7 @@ func confirmWrite(
 	case "n", "N":
 		return false, nil
 	default:
-		return false, fmt.Errorf("无效确认输入 %q,请输入 y 或 n", decision)
+		return false, fmt.Errorf("收到无效输入: %q, %w", decision, ErrInvalidInput)
 	}
 
 }
