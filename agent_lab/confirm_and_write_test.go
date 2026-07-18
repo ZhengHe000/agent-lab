@@ -46,6 +46,15 @@ func TestConfirmAndWriteTextFileInDir(t *testing.T) {
 			wantFile:   false,
 			wantOutput: "确认写入",
 		},
+		{
+			name:       "非法文件名不显示确认提示也不写入",
+			input:      "y\n",
+			filename:   "../secret.txt",
+			content:    "hello",
+			wantErr:    ErrInvalidFilename,
+			wantFile:   false,
+			wantOutput: "",
+		},
 	}
 
 	for _, tc := range tests {
@@ -57,13 +66,14 @@ func TestConfirmAndWriteTextFileInDir(t *testing.T) {
 
 			filePath, gotErr := confirmAndWriteTextFileInDir(testDir, input, write, tc.filename, tc.content)
 
-			if gotErr != nil {
-				if !errors.Is(gotErr, tc.wantErr) {
-					t.Fatalf("实际得到的错误链中不包含预期的原始错误, want: %v, got: %v", tc.wantErr, gotErr)
-				}
+			if !errors.Is(gotErr, tc.wantErr) {
+				t.Fatalf("实际得到的错误链中不包含预期的原始错误, want: %v, got: %v", tc.wantErr, gotErr)
 			}
-
-			if !strings.Contains(write.String(), tc.wantOutput) {
+			if tc.wantOutput == "" {
+				if write.Len() != 0 {
+					t.Errorf("校验失败时不应显示确认提示，实际输出: %q", write.String())
+				}
+			} else if !strings.Contains(write.String(), tc.wantOutput) {
 				t.Errorf("确认提示未包含 %q, 实际输出: %q", tc.wantOutput, write.String())
 			}
 
