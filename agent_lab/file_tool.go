@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -90,4 +92,61 @@ func writeTextFileInDir(dir string, filename string, content string) (string, er
 	}
 
 	return filePath, nil // 返回文件路径和空
+}
+
+func confirmWrite(
+	reader io.Reader,
+	writer io.Writer,
+	filename string,
+	content string,
+) (bool, error) {
+
+	if len(strings.TrimSpace(filename)) == 0 || len(strings.TrimSpace(content)) == 0 { // 确认后续参数非空
+		return false, ErrContentEmpty
+	}
+
+	//设置模板
+	const template = `
+	|即将覆盖写入文件		  
+	|文件名: %s
+	|内容长度: %d字节. %d 字符  	
+	|内容预览:
+	|%v|
+	|确认写入？请输入 y(确认) 或 n(拒绝):`
+
+	charCount := utf8.RuneCountInString(content) // 计算字符数
+	byteCount := len(content)                    // 计算字节数
+
+	prompt := fmt.Sprintf(template, filename, byteCount, charCount, content) // 装填模板参数
+	_, err := writer.Write([]byte(prompt))
+	if err != nil {
+		return false, fmt.Errorf("错误, 使用writer时异常, Err: %v", err)
+	}
+
+	scanners := bufio.NewScanner(reader) // 创建扫描器
+
+	for scanners.Scan() { // 阻塞程序直到得到输入
+
+		decision := strings.TrimSpace(scanners.Text()) // 接收输入
+
+		if len(decision) == 0 { // 检验
+			return false, fmt.Errorf("禁止输入空内容, 必须输入y 或 n 来做选择")
+		}
+
+		if decision == "y" || decision == "Y" { // 按照正确输入做决策
+			return true, nil
+		}
+
+		if decision == "n" || decision == "N" { // 按照正确输入做决策
+			return false, nil
+		}
+
+		return false, fmt.Errorf("其他异常, 接收到输入为: %v", decision) // 未知异常直接拒绝文件写入
+	}
+
+	if err := scanners.Err(); err != nil { // 检验扫描结束的正确性
+		return false, fmt.Errorf("错误, Scanner异常结束, Err: %v", err)
+	}
+
+	return false, fmt.Errorf("函数: confirmWrite 出现未知问题导致执行到此, 此处为兜底默认拒绝执行策略") // 默认拒绝行为
 }
