@@ -62,19 +62,19 @@ func TestConfirmAndWriteTextFileInDir(t *testing.T) {
 			testDir := t.TempDir()
 
 			input := strings.NewReader(tc.input)
-			write := &bytes.Buffer{}
+			var output bytes.Buffer
 
-			filePath, gotErr := confirmAndWriteTextFileInDir(testDir, input, write, tc.filename, tc.content)
+			filePath, gotErr := confirmAndWriteTextFileInDir(testDir, input, &output, tc.filename, tc.content)
 
 			if !errors.Is(gotErr, tc.wantErr) {
 				t.Fatalf("实际得到的错误链中不包含预期的原始错误, want: %v, got: %v", tc.wantErr, gotErr)
 			}
 			if tc.wantOutput == "" {
-				if write.Len() != 0 {
-					t.Errorf("校验失败时不应显示确认提示，实际输出: %q", write.String())
+				if output.Len() != 0 {
+					t.Errorf("校验失败时不应显示确认提示，实际输出: %q", output.String())
 				}
-			} else if !strings.Contains(write.String(), tc.wantOutput) {
-				t.Errorf("确认提示未包含 %q, 实际输出: %q", tc.wantOutput, write.String())
+			} else if !strings.Contains(output.String(), tc.wantOutput) {
+				t.Errorf("确认提示未包含 %q, 实际输出: %q", tc.wantOutput, output.String())
 			}
 
 			entries, readErr := os.ReadDir(testDir)
