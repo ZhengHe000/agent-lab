@@ -30,8 +30,12 @@ func (r *RuneTooLongError) Error() string {
 }
 
 const ( // 其内容作为函数中默认条件使用
-	workspaceDir = `./AIWorkspace` // workspaceDir 是正式文件工具使用的受控工作区
-	maxReadBytes = 40_000          // 最大读取限制
+
+	// workspaceDir 是正式文件工具使用的受控工作区。
+	workspaceDir = `./AIWorkspace`
+
+	// maxReadBytes 是单次允许读取的最大字节数。
+	maxReadBytes = 40_000
 )
 
 func validateContent(content string) error { // validateContent 对Content内容校验
