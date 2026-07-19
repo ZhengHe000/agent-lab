@@ -119,14 +119,14 @@ func TestReadTextFileInDirRejectsSymlink(t *testing.T) {
 		t.Fatalf("创建符号链接目标文件失败: %v", err)
 	}
 
-	linkname := "link.txt"
-	linkPath := filepath.Join(testDir, linkname)
+	linkName := "link.txt"
+	linkPath := filepath.Join(testDir, linkName)
 
 	if err := os.Symlink(targetPath, linkPath); err != nil {
 		t.Skipf("当前环境不支持创建符号链接，跳过测试: %v", err)
 	}
 
-	got, err := readTextFileInDir(testDir, linkname)
+	got, err := readTextFileInDir(testDir, linkName)
 
 	if got != "" {
 		t.Errorf("拒绝读取符号链接时应返回空内容，实际得到: %q", got)
