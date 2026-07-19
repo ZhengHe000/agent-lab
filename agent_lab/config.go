@@ -39,7 +39,7 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 	prompt, exists := os.LookupEnv("SYSTEM_PROMPT")
 	if !exists {
 		log.Println("未从环境中找到, SYSTEM_PROMPT装配失败, 缺失变量为非关键值, 后续执行使用默认值")
-		prompt = `你是智能生命体Noah,中文直译为诺亚,关于编程问题默认使用go语言解答`
+		prompt = `你是智能体Noah,中文直译为诺亚,关于编程问题默认使用go语言解答`
 	}
 	timeoutStr, exists := os.LookupEnv("REQUEST_TIMEOUT") // 局部超时逻辑增加自由度,函数内不使用默认http.Client设置兜底
 	if !exists {

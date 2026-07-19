@@ -56,7 +56,7 @@ func (a *Agent) callLLM(input string) (AIResponse, error) { //发送请求并处
 	reqBody := map[string]any{ // 组装请求体
 		"messages":    a.messages,
 		"model":       a.config.Model,
-		"temperature": 0.3,
+		"temperature": 1,
 	}
 
 	data, err := json.Marshal(reqBody) //将请求体编码
