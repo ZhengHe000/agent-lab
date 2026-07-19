@@ -110,3 +110,29 @@ func TestReadTextFileInDir(t *testing.T) {
 		})
 	}
 }
+
+func TestReadTextFileInDirRejectsSymlink(t *testing.T) {
+	testDir := t.TempDir()
+
+	targetPath := filepath.Join(testDir, "target.txt")
+	if err := os.WriteFile(targetPath, []byte("secret"), 0o644); err != nil {
+		t.Fatalf("创建符号链接目标文件失败: %v", err)
+	}
+
+	linkname := "link.txt"
+	linkPath := filepath.Join(testDir, linkname)
+
+	if err := os.Symlink(targetPath, linkPath); err != nil {
+		t.Skipf("当前环境不支持创建符号链接，跳过测试: %v", err)
+	}
+
+	got, err := readTextFileInDir(testDir, linkname)
+
+	if got != "" {
+		t.Errorf("拒绝读取符号链接时应返回空内容，实际得到: %q", got)
+	}
+
+	if !errors.Is(err, ErrReadFile) {
+		t.Fatalf("Err: %v, 期望错误链包含: %v", err, ErrReadFile)
+	}
+}
