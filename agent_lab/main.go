@@ -49,7 +49,7 @@ func main() {
 		}
 
 		if len(resp.Choices) > 0 {
-			fmt.Printf("-<Noah>-  %s\n", resp.Choices[0].Message.Content)
+			fmt.Printf("-<Noah>-\n%s\n", resp.Choices[0].Message.Content)
 		}
 	}
 
