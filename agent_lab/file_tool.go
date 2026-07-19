@@ -190,3 +190,49 @@ func confirmAndWriteTextFileInDir(
 
 	return writeTextFileInDir(dir, filename, content) // 调用写入函数, 返回string 和 error
 }
+
+func readTextFile(filename string) (string, error) {
+	return readTextFileInDir(workspaceDir, filename)
+}
+
+func readTextFileInDir(dir string, filename string) (string, error) { // readTextFileInDir 返回大小受限的文件内容
+	if err := validateFilename(filename); err != nil {
+		return "", err
+	}
+
+	filePath := filepath.Join(dir, filename)
+
+	info, err := os.Lstat(filePath) // 获取文件信息
+	if err != nil {
+		return "", fmt.Errorf("获取文件信息失败, Err: %v", err)
+	}
+
+	if info.Mode()&os.ModeSymlink != 0 { // 判断文件是否为特殊文件
+		return "", ErrInvalidFileType
+	}
+
+	if !info.Mode().IsRegular() { // 直接确认文件是否是普通文件
+		return "", fmt.Errorf("禁止操作不属于普通文件的文件")
+	}
+
+	file, err := os.Open(filePath) // 打开文件
+	if err != nil {
+		return "", fmt.Errorf("%w , Err: %v", ErrReadFile, err)
+	}
+	defer file.Close() // 退出前释放资源
+
+	var maxReadBytes int64
+	maxReadBytes = 40000 // 最大读取限制
+	limitedReader := io.LimitReader(file, maxReadBytes+1) // 返回约束reader
+
+	data, err := io.ReadAll(limitedReader) // 读取受限reader的所有内容
+	if err != nil {
+		return "", fmt.Errorf("%w , Err: %v", ErrReadFile, err)
+	}
+
+	if int64(len(data)) > maxReadBytes { // 判断读取内容是否超限
+		return "", ErrFileTooLarge
+	}
+
+	return string(data), nil
+}
