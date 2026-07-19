@@ -29,6 +29,11 @@ func (r *RuneTooLongError) Error() string {
 	return fmt.Sprintf("内容过长, 限制 %d 字符, 当前 %d 字符", r.limit, r.actual)
 }
 
+const ( // 其内容作为函数中默认条件使用
+	workspaceDir = `./AIWorkspace` // workspaceDir 是正式文件工具使用的受控工作区
+	maxReadBytes = 40_000          // 最大读取限制
+)
+
 func validateContent(content string) error { // validateContent 对Content内容校验
 
 	if strings.TrimSpace(content) == "" { // 判断是否为空
@@ -67,7 +72,6 @@ func validateFilename(filename string) error { // validateFilename 文件名校�
 	return nil
 }
 
-const workspaceDir = `./AIWorkspace` // workspaceDir 是正式文件工具使用的受控工作区
 func writeTextFile(filename string, content string) (string, error) { // writeTextFile 在受控工作目录中覆盖写入文本文件
 	return writeTextFileInDir(workspaceDir, filename, content)
 }
@@ -204,33 +208,31 @@ func readTextFileInDir(dir string, filename string) (string, error) { // readTex
 
 	info, err := os.Lstat(filePath) // 获取文件信息
 	if err != nil {
-		return "", fmt.Errorf("获取文件信息失败, Err: %v", err)
+		return "", fmt.Errorf("%w: %w", ErrReadFile, err)
 	}
 
 	if info.Mode()&os.ModeSymlink != 0 { // 判断文件是否为特殊文件
-		return "", ErrInvalidFileType
+		return "", fmt.Errorf("%w: 拒绝读取符号链接", ErrReadFile)
 	}
 
 	if !info.Mode().IsRegular() { // 直接确认文件是否是普通文件
-		return "", fmt.Errorf("禁止操作不属于普通文件的文件")
+		return "", fmt.Errorf("%w: 只能读取普通文件", ErrReadFile)
 	}
 
 	file, err := os.Open(filePath) // 打开文件
 	if err != nil {
-		return "", fmt.Errorf("%w , Err: %v", ErrReadFile, err)
+		return "", fmt.Errorf("%w: %w", ErrReadFile, err)
 	}
 	defer file.Close() // 退出前释放资源
 
-	var maxReadBytes int64
-	maxReadBytes = 40000 // 最大读取限制
-	limitedReader := io.LimitReader(file, maxReadBytes+1) // 返回约束reader
+	limitedReader := io.LimitReader(file, int64(maxReadBytes+1)) // 返回约束reader
 
 	data, err := io.ReadAll(limitedReader) // 读取受限reader的所有内容
 	if err != nil {
-		return "", fmt.Errorf("%w , Err: %v", ErrReadFile, err)
+		return "", fmt.Errorf("%w: %w", ErrReadFile, err)
 	}
 
-	if int64(len(data)) > maxReadBytes { // 判断读取内容是否超限
+	if len(data) > maxReadBytes { // 判断读取内容是否超限
 		return "", ErrFileTooLarge
 	}
 

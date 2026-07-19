@@ -26,9 +26,6 @@ var (
 	// ErrReadFile 表示读取文件时失败
 	ErrReadFile = errors.New("读取文件失败")
 
-	// 无效的文件类型
-	ErrInvalidFileType = errors.New("文件含有被禁止内容")
-
 	// ErrFileTooLarge 表示待读取文件超过允许的最大大小。
 	ErrFileTooLarge = errors.New("文件内容超过允许读取的大小")
 )
