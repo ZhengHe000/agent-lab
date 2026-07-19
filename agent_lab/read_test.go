@@ -74,6 +74,20 @@ func TestReadTextFileInDir(t *testing.T) {
 			want:    "",
 			wantErr: ErrFileTooLarge,
 		},
+		{
+			name:     "拒绝读取目录",
+			filename: "folder.txt",
+			setup: func(t *testing.T, dir string, filename string, content string) {
+				t.Helper()
+
+				dirPath := filepath.Join(dir, filename)
+				if err := os.Mkdir(dirPath, 0o755); err != nil {
+					t.Fatalf("创建测试目录失败: %v", err)
+				}
+			},
+			want:    "",
+			wantErr: ErrReadFile,
+		},
 	}
 
 	for _, tc := range tests {
@@ -84,14 +98,14 @@ func TestReadTextFileInDir(t *testing.T) {
 				tc.setup(t, testDir, tc.filename, tc.content)
 			}
 
-			gotStr, gotErr := readTextFileInDir(testDir, tc.filename)
+			got, gotErr := readTextFileInDir(testDir, tc.filename)
+
+			if got != tc.want {
+				t.Errorf("want: %v, got: %v", tc.want, got)
+			}
 
 			if !errors.Is(gotErr, tc.wantErr) {
 				t.Fatalf("wantErr: %v, gotErr: %v", tc.wantErr, gotErr)
-			}
-
-			if gotStr != tc.want {
-				t.Fatalf("want: %v, gotStr: %v", tc.want, gotStr)
 			}
 		})
 	}
