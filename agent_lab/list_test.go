@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -21,7 +20,7 @@ func TestListTextFilesInDirMissingDir(t *testing.T) {
 		t.Errorf("期待填入不存在的目录时返回 []string{}, 但实际返回: %v", entries)
 	}
 
-	if !errors.Is(err, nil) {
+	if err != nil {
 		t.Fatalf("期望错误链中包含: %v, 实际得到: %v", ErrReadFile, err)
 	}
 }
@@ -37,31 +36,41 @@ func TestListTextFilesInDirEmptyDir(t *testing.T) {
 		t.Errorf("期待填入空目录时返回 []string{}, 但实际返回: %v", entries)
 	}
 
-	if !errors.Is(err, nil) {
+	if err != nil {
 		t.Fatalf("期望错误链中包含: %v, 实际得到: %v", ErrReadFile, err)
 	}
 }
 
-func createTestDirOrFile(t *testing.T, dir string, testFileName []string, testDirName []string) {
+func createTestDirOrFile(t *testing.T, dir string, testFileNames []string, testDirNames []string) {
 	t.Helper()
 
-	for _, fileName := range testFileName {
-		filePath := filepath.Join(dir, fileName)
+	target := "target.txt" 
+	targetPath := filepath.Join(dir, target)
 
-		file, err := os.Create(filePath)
-		if err != nil {
-			t.Errorf("文件名 %s 创建失败 文件路径: %s 错误: %v, 为保证其他内容正常创建用于测试,程序跳过本轮继续\n", fileName, filePath, err)
-			continue
-		}
-		
-		file.Close()
+	if err := os.WriteFile(targetPath, []byte("target"), 0o644); err != nil {
+		t.Fatalf("创建符号链接目标文件失败: %v", err)
 	}
 
-	for _, dirName := range testDirName {
+	link := "link.txt"
+	linkPath := filepath.Join(dir, link)
+
+	if err := os.Symlink(targetPath, linkPath); err != nil {
+		t.Skipf("当前环境不支持创建符号链接，跳过测试: %v", err)
+	}
+
+	for _, fileName := range testFileNames {
+		filePath := filepath.Join(dir, fileName)
+
+		if err := os.WriteFile(filePath, []byte("test"), 0o644); err != nil {
+			t.Fatalf("创建测试文件 %q 失败: %v", fileName, err)
+		}
+	}
+
+	for _, dirName := range testDirNames {
 		dirPath := filepath.Join(dir, dirName)
-		if err := os.Mkdir(dirPath, 0755); err != nil {
-			t.Errorf("目录名 %s 创建失败 目录路径: %s 错误: %v, 为保证其他内容正常创建用于测试,程序跳过本轮继续\n", dirName, dirPath, err)
-			continue
+
+		if err := os.Mkdir(dirPath, 0o755); err != nil {
+			t.Fatalf("创建测试目录 %q 失败: %v", dirName, err)
 		}
 	}
 }
@@ -69,12 +78,12 @@ func createTestDirOrFile(t *testing.T, dir string, testFileName []string, testDi
 func TestListTextFilesInDirFiltersAndSorts(t *testing.T) {
 	testDir := t.TempDir()
 
-	testFileName := []string{
-		"y-1.txt",  // 合法 .txt 文件
-		"y-2.txt",  // 合法 .txt 文件
-		"y-3.txt",  // 合法 .txt 文件
-		"n-1.md",   // .md 文件
+	testFileName := []string{ // 混合创建顺序
 		".n-1.txt", //名字非法的 .txt 文件
+		"y-2.txt",  // 合法 .txt 文件
+		"n-1.md",   // .md 文件
+		"y-3.txt",  // 合法 .txt 文件
+		"y-1.txt",  // 合法 .txt 文件
 	}
 
 	testDirName := []string{
@@ -93,8 +102,6 @@ func TestListTextFilesInDirFiltersAndSorts(t *testing.T) {
 		"y-2.txt",
 		"y-3.txt",
 	}
-
-	slices.Sort(entries)
 
 	if !slices.Equal(entries, want) {
 		t.Fatal("期待与实际得到文件不符")
