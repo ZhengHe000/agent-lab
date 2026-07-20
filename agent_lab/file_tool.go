@@ -242,3 +242,41 @@ func readTextFileInDir(dir string, filename string) (string, error) { // readTex
 
 	return string(data), nil
 }
+
+func listTextFiles() ([]string, error) {
+	return listTextFilesInDir(workspaceDir)
+}
+
+func listTextFilesInDir(dir string) ([]string, error) {
+	entries, err := os.ReadDir(dir) // 获取目录下内容
+	if err != nil {
+		if os.IsNotExist(err) { // 判断目录下是否为空
+			return []string{}, nil
+		}
+		return nil, fmt.Errorf("获取目录内容失败, %w, Err: %v", ErrReadFile, err)
+	}
+
+	files := make([]string, 0) // 创建容器接收后续合规文件
+	for _, entry := range entries {
+		if err := validateFilename(entry.Name()); err != nil {
+			continue
+		}
+
+		info, err := entry.Info()
+		if err != nil {
+			return nil, fmt.Errorf("获取文件元数据失败, %w, Err: %v", ErrReadFile, err)
+		}
+
+		if info.Mode()&os.ModeSymlink != 0 {
+			continue
+		}
+
+		if !info.Mode().IsRegular() {
+			continue
+		}
+
+		files = append(files, entry.Name())
+	}
+
+	return files, nil
+}
