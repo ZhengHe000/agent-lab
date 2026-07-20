@@ -21,7 +21,7 @@ func TestListTextFilesInDirMissingDir(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Fatalf("期望错误链中包含: %v, 实际得到: %v", ErrReadFile, err)
+		t.Fatalf("列出不存在目录时不应返回错误，实际得到: %v", err)
 	}
 }
 
@@ -37,26 +37,12 @@ func TestListTextFilesInDirEmptyDir(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Fatalf("期望错误链中包含: %v, 实际得到: %v", ErrReadFile, err)
+		t.Fatalf("列出空目录时不应返回错误，实际得到: %v", err)
 	}
 }
 
 func createTestDirOrFile(t *testing.T, dir string, testFileNames []string, testDirNames []string) {
 	t.Helper()
-
-	target := "target.txt" 
-	targetPath := filepath.Join(dir, target)
-
-	if err := os.WriteFile(targetPath, []byte("target"), 0o644); err != nil {
-		t.Fatalf("创建符号链接目标文件失败: %v", err)
-	}
-
-	link := "link.txt"
-	linkPath := filepath.Join(dir, link)
-
-	if err := os.Symlink(targetPath, linkPath); err != nil {
-		t.Skipf("当前环境不支持创建符号链接，跳过测试: %v", err)
-	}
 
 	for _, fileName := range testFileNames {
 		filePath := filepath.Join(dir, fileName)
@@ -105,5 +91,32 @@ func TestListTextFilesInDirFiltersAndSorts(t *testing.T) {
 
 	if !slices.Equal(entries, want) {
 		t.Fatal("期待与实际得到文件不符")
+	}
+}
+
+func TestListTextFilesInDirSkipsSymlink(t *testing.T) {
+	testDir := t.TempDir()
+
+	targetPath := filepath.Join(testDir, "target.txt")
+	if err := os.WriteFile(targetPath, []byte("target"), 0o644); err != nil {
+		t.Fatalf("创建符号链接目标文件失败: %v", err)
+	}
+
+	linkName := "link.txt"
+	linkPath := filepath.Join(testDir, linkName)
+
+	if err := os.Symlink(targetPath, linkPath); err != nil {
+		t.Skipf("当前环境不支持创建符号链接，跳过测试: %v", err)
+	}
+
+	entries, err := listTextFilesInDir(testDir)
+	if err != nil {
+		t.Fatalf("列出文件失败: %v", err)
+	}
+
+	want := []string{"target.txt"}
+
+	if !slices.Equal(entries, want) {
+		t.Fatalf("entries = %v, want %v", entries, want)
 	}
 }
