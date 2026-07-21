@@ -81,9 +81,7 @@ func TestLoadEnvFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			if err := os.Setenv(tt.fixed_allocation, tt.fixed_value); err != nil { // 进行环境配置
-				t.Fatal("设置默认环境失败")
-			}
+			t.Setenv(tt.fixed_allocation, tt.fixed_value)
 
 			testDir := t.TempDir()
 
