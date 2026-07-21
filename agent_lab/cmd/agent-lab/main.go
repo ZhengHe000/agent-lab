@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	if err := config.LoadEnv("agent_lab/.env.local"); err != nil {
+	if err := config.LoadEnvFile("agent_lab/.env.local"); err != nil {
 		log.Fatalf("环境配置失败:%v", err)
 	}
 	log.Println("环境配置成功")
