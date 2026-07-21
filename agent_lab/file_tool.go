@@ -253,7 +253,7 @@ func listTextFilesInDir(dir string) ([]string, error) {
 		if os.IsNotExist(err) { // 工作区目录不存在时视为没有文件
 			return []string{}, nil
 		}
-		return nil, fmt.Errorf(" %w :获取目录内容失败: %w", ErrReadFile, err)
+		return nil, fmt.Errorf("%w:获取目录内容失败: %w", ErrReadFile, err)
 	}
 
 	files := make([]string, 0) // 创建容器接收后续合规文件
@@ -264,7 +264,7 @@ func listTextFilesInDir(dir string) ([]string, error) {
 
 		info, err := entry.Info()
 		if err != nil {
-			return nil, fmt.Errorf("%w :获取文件元数据失败: %w", ErrReadFile, err)
+			return nil, fmt.Errorf("%w:获取文件元数据失败: %w", ErrReadFile, err)
 		}
 
 		if info.Mode()&os.ModeSymlink != 0 {
