@@ -2,15 +2,15 @@ package config
 
 import (
 	"bufio"
-	"log"
+	"fmt"
 	"os"
 	"strings"
 )
 
-func loadEnv(fileName string) error { // 配置环境变量
+func LoadEnv(fileName string) error { // 配置环境变量
 	file, err := os.Open(fileName) //打开env环境配置文件
 	if err != nil {
-		return log.Errorf("打开 %v 文件失败, 错误: %w", fileName, err)
+		return fmt.Errorf("打开 %v 文件失败, 错误: %w", fileName, err)
 	}
 
 	defer file.Close() // 结束前关闭文件
