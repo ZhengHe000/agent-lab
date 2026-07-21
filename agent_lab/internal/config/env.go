@@ -3,7 +3,6 @@ package config
 import (
 	"bufio"
 	"fmt"
-	"github.com/ZhengHe000/agent-lab/agent_lab/internal/workspace"
 	"os"
 	"strings"
 )
@@ -11,7 +10,7 @@ import (
 func LoadEnvFile(fileName string) error { // 配置环境变量
 	file, err := os.Open(fileName) //打开env环境配置文件
 	if err != nil {
-		return fmt.Errorf("%w:%w", workspace.ErrReadFile, err)
+		return fmt.Errorf("打开环境配置文件 %q 失败: %w", fileName, err)
 	}
 	defer file.Close() // 结束前关闭文件
 
@@ -28,6 +27,9 @@ func LoadEnvFile(fileName string) error { // 配置环境变量
 		}
 
 		parts := strings.SplitN(line, "=", 2) // 以=分开
+		if len(parts) != 2 {
+			return fmt.Errorf("第 %d 行不是合法的 KEY=VALUE 格式", lineNumber)
+		}
 
 		key := strings.TrimSpace(parts[0])
 		value := strings.TrimSpace(parts[1])

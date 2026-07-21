@@ -67,6 +67,15 @@ func TestLoadEnvFile(t *testing.T) {
 			fixed_allocation: "ZERO",
 			fixed_value:      "0",
 		},
+		{
+			name:             "缺少等于号",
+			fileName:         ".env.text",
+			envContent:       "ZERO1",
+			wantErr:          true,
+			notExists:        "",
+			fixed_allocation: "ZERO",
+			fixed_value:      "0",
+		},
 	}
 
 	for _, tt := range tests {
@@ -77,7 +86,7 @@ func TestLoadEnvFile(t *testing.T) {
 			}
 
 			testDir := t.TempDir()
-			
+
 			var filePath string
 			if tt.name == "使用错误文件路径" {
 				filePath = filepath.Join(testDir, "nonexistent", tt.fileName)
