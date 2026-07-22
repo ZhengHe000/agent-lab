@@ -25,7 +25,7 @@ func LoadConfig(method string) *Config { // 装配AIAPI请求变量
 	}
 	model, exists := os.LookupEnv("MODEL")
 	if !exists {
-		log.Println("未从环境中找到, MODELY装配失败, 缺失变量为非关键值, 后续执行使用默认值")
+		log.Println("未从环境中找到, MODEL装配失败, 缺失变量为非关键值, 后续执行使用默认值")
 		model = "deepseek-v4-pro"
 	}
 	llmAPIURL, exists := os.LookupEnv("LLM_API_URL")
