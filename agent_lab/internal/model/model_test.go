@@ -32,7 +32,7 @@ func TestModelInterface(t *testing.T) {
 	got, err := m.Complete(context.Background(), Request{
 		Model: "zero-Model",
 		Messages: []Message{
-			Message{
+			{
 				Role:    RoleUser,
 				Content: "你好",
 			},
