@@ -24,7 +24,7 @@ type Message struct { // 通用消息
 	Role       Role       // 身份
 	Content    string     // 正文, 不使用*string, 因为是否为null应该在上层做判断, 这里直接判断是否为""
 	ToolCalls  []ToolCall // 单个或多工具信息
-	ToolCallID string     // 工具结果所对应的模型调用ID, 装的是调用工具响应里模型为一次操作分配的唯一ID
+	ToolCallID string     // 一份工具执行结果所对应的模型调用ID, 装的是模型决定调用工具的响应中 模型为一个工具操作分配的唯一ID
 }
 
 type Request struct {
@@ -34,9 +34,9 @@ type Request struct {
 
 type Response struct {
 	Message      Message
-	FinishReason string // 模型结束循环的理由
+	FinishReason string // 模型决定结束循环时填写的理由
 }
 
 type Model interface { // 定义Model接口
-	Complete(ctx context.Context, request Request) (Response, error) // 只要实现Complete函数作为方法, 就可以当作Model接口使用
+	Complete(ctx context.Context, request Request) (Response, error) // 只要实现Complete函数作为方法, 就可以当作Model类型使用
 }
