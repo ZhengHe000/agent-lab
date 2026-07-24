@@ -6,58 +6,63 @@ import (
 )
 
 func TestChatCompletionResponse(t *testing.T) {
-	testResponse := chatCompletionResponse{
-		Choices: []chatChoice{
-			{
-				Message: chatMessage{
-					Role:    "assistant",
-					Content: nil,
-					ToolCalls: []chatToolCall{
-						{
-							ID:   "tool_abc123",
-							Type: "function",
-							Function: chatFunctionCall{
-								Name:      "test_tool",
-								Arguments: `"filename":"test_filename"`,
-							},
-						},
-					},
-				},
-				FinishReason: "调用test_tool",
-			},
-		},
+	responseJSON := []byte(`{
+	"choices": [
+		{"finish_reason": "tool_calls",
+		"message":{ 
+			"role": "assistant",
+			"content": null,
+			"tool_calls": [ 
+					{
+						"id": "abc_tool123",
+						"type": "function",
+						"function": {
+										"name": "read_test_file",
+										"arguments":"{\"filename\":\"test\"}"
+									}
+					}
+							]
+				}
+		}
+				]
+							}`)
+
+	var response chatCompletionResponse
+
+	if err := json.Unmarshal(responseJSON, &response); err != nil {
+		t.Fatalf("JSON反序列化失败: %v", err)
 	}
 
-	data, err := json.Marshal(testResponse)
-	if err != nil {
-		t.Fatalf("测试响应序列化失败: %v", err)
+	if len(response.Choices) != 1 {
+		t.Fatalf("Choices数量 want: 1, got: %d", len(response.Choices))
+	}
+	choice := response.Choices[0]
+
+	if len(choice.Message.ToolCalls) != 1 {
+		t.Fatalf("ToolCalls数量 want: 1, got: %d", len(choice.Message.ToolCalls))
 	}
 
-	var r chatCompletionResponse
+	call := choice.Message.ToolCalls[0]
 
-	if err := json.Unmarshal(data, &r); err != nil {
-		t.Fatalf("测试json反序列化失败: %v", err)
-	}
-
-	if len(r.Choices) == 0 {
-		t.Fatal("解析后得到内容为空")
+	if choice.Message.Content != nil {
+		t.Fatalf("Content与期望值不同 want: %v, got: %v", nil, choice.Message.Content)
 	}
 
-	if r.Choices[0].Message.Content != nil {
-		t.Fatalf("解析后得到Content与期望的 nil 不同: %q", *r.Choices[0].Message.Content)
+	if choice.FinishReason != "tool_calls" {
+		t.Fatalf("FinishReason与期望值不同 want: %q, got: %q", "tool_calls", choice.FinishReason)
+	}
+	if call.ID != "abc_tool123" {
+		t.Fatalf("call.ID与期望值不同 want: %q, got: %q", "abc_tool123", call.ID)
 	}
 
-	if r.Choices[0].Message.ToolCalls[0].ID != "tool_abc123" {
-		t.Fatalf("解析后得到ToolCalls[0].ID与期望的 tool_abc123 不同: %q", r.Choices[0].Message.ToolCalls[0].ID)
-	}
-	if r.Choices[0].Message.ToolCalls[0].Function.Name != "test_tool" {
-		t.Fatalf("解析后得到Function.Name与期望的 test_tool 不同: %q", r.Choices[0].Message.ToolCalls[0].Function.Name)
-	}
-	if r.Choices[0].Message.ToolCalls[0].Function.Arguments != `"filename":"test_filename"` {
-		t.Fatalf("解析后得到Function.Arguments与期望的 filename:test_filename 不同: %q", r.Choices[0].Message.ToolCalls[0].Function.Arguments)
+	if call.Type != "function" {
+		t.Fatalf("call.Type与期望值不同 want: %q, got: %q", "function", call.Type)
 	}
 
-	if r.Choices[0].FinishReason != "调用test_tool" {
-		t.Fatalf("解析后得到FinishReason与期望的 调用test_tool 不同: %q", r.Choices[0].FinishReason)
+	if call.Function.Name != "read_test_file" {
+		t.Fatalf(" call.Function.name与期望值不同 want: %q, got: %q", "read_test_file", call.Function.Name)
+	}
+	if call.Function.Arguments != `{"filename":"test"}` {
+		t.Fatalf("call.Function.Arguments与期望值不同 want: %q, got: %q", `{"filename":"test"}`, call.Function.Arguments)
 	}
 }
