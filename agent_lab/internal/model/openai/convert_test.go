@@ -1,10 +1,12 @@
 package openai
 
 import (
+	"bytes"
 	"encoding/json"
-	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model"
 	"reflect"
 	"testing"
+
+	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model"
 )
 
 func TestToModelResponse(t *testing.T) {
@@ -92,8 +94,10 @@ func TestToModelResponse(t *testing.T) {
 				if tcl.Name != "read_file" {
 					t.Fatalf("want: %s, got: %s", "read_file", tcl.Name)
 				}
-				if tcl.Arguments[0] != json.RawMessage(`{"filename":"note.txt"}`)[0] {
-					t.Fatalf("want: %v, got: %v", json.RawMessage(`{"filename":"note.txt"}`), tcl.Arguments)
+				wantArguments := json.RawMessage(`{"filename":"note.txt"}`)
+
+				if !bytes.Equal(tcl.Arguments, wantArguments) {
+					t.Fatalf("Arguments: %s, want: %s", tcl.Arguments, wantArguments)
 				}
 			},
 		},
@@ -101,6 +105,36 @@ func TestToModelResponse(t *testing.T) {
 			name:         "空 Choices",
 			wantErr:      true,
 			testResponse: chatCompletionResponse{},
+		},
+		{
+			name:    "错误的Role身份",
+			wantErr: true,
+			testResponse: chatCompletionResponse{
+				Choices: []chatChoice{
+					chatChoice{
+						Message: chatMessage{
+							Role: "NORole",
+						},
+					},
+				},
+			},
+		},
+		{
+			name:    "错误的工具调用类型",
+			wantErr: true,
+			testResponse: chatCompletionResponse{
+				Choices: []chatChoice{
+					chatChoice{
+						Message: chatMessage{
+							ToolCalls: []chatToolCall{
+								chatToolCall{
+									Type: "NOType",
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
