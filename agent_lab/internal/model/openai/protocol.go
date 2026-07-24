@@ -1,9 +1,5 @@
 package openai
 
-import (
-	
-)
-
 type chatCompletionRequest struct {
 	Model    string        `json:"model"`
 	Messages []chatMessage `json:"messages"`
@@ -12,8 +8,8 @@ type chatCompletionRequest struct {
 type chatMessage struct {
 	Role       string         `json:"role"`
 	Content    *string        `json:"content"`
-	ToolCalls  []chatToolCall `json:"tool_calls",omitempty`
-	ToolCallID string         `json:"tool_call_id",omitempty`
+	ToolCalls  []chatToolCall `json:"tool_calls,omitempty"`
+	ToolCallID string         `json:"tool_call_id,omitempty"`
 }
 
 type chatToolCall struct {
