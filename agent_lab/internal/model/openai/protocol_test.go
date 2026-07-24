@@ -17,7 +17,7 @@ func TestChatCompletionResponse(t *testing.T) {
 						"id": "abc_tool123",
 						"type": "function",
 						"function": {
-										"name": "read_test_file",
+										"name": "read_text_file",
 										"arguments":"{\"filename\":\"test\"}"
 									}
 					}
@@ -59,8 +59,8 @@ func TestChatCompletionResponse(t *testing.T) {
 		t.Fatalf("call.Type与期望值不同 want: %q, got: %q", "function", call.Type)
 	}
 
-	if call.Function.Name != "read_test_file" {
-		t.Fatalf(" call.Function.name与期望值不同 want: %q, got: %q", "read_test_file", call.Function.Name)
+	if call.Function.Name != "read_text_file" {
+		t.Fatalf(" call.Function.name与期望值不同 want: %q, got: %q", "read_text_file", call.Function.Name)
 	}
 	if call.Function.Arguments != `{"filename":"test"}` {
 		t.Fatalf("call.Function.Arguments与期望值不同 want: %q, got: %q", `{"filename":"test"}`, call.Function.Arguments)
