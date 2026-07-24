@@ -3,6 +3,7 @@ package openai
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model"
 )
 
@@ -46,7 +47,7 @@ func toModelMessage(chatMessage chatMessage) (model.Message, error) {
 		return model.Message{}, fmt.Errorf("Role类型不符合预设: %q", chatMessage.Role)
 	}
 
-	var modelMessage model.Message = model.Message{ // 填充基础响应格式
+	modelMessage := model.Message{ // 填充基础响应格式
 		Role:       role,
 		Content:    content,
 		ToolCallID: chatMessage.ToolCallID,
