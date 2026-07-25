@@ -126,6 +126,7 @@ func TestToModelResponse(t *testing.T) {
 				Choices: []chatChoice{
 					chatChoice{
 						Message: chatMessage{
+							Role: "assistant",
 							ToolCalls: []chatToolCall{
 								chatToolCall{
 									Type: "NOType",
