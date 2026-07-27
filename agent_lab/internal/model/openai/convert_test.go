@@ -61,7 +61,7 @@ func TestToModelResponse(t *testing.T) {
 									ID:   "tool_zero",
 									Type: "function",
 									Function: chatFunctionCall{
-										Name:      "read_file",
+										Name:      "read_test_file",
 										Arguments: `{"filename":"note.txt"}`,
 									},
 								},
@@ -91,8 +91,8 @@ func TestToModelResponse(t *testing.T) {
 				if tcl.ID != "tool_zero" {
 					t.Fatalf("want: %s, got: %s", "tool_zero", tcl.ID)
 				}
-				if tcl.Name != "read_file" {
-					t.Fatalf("want: %s, got: %s", "read_file", tcl.Name)
+				if tcl.Name != "read_test_file" {
+					t.Fatalf("want: %s, got: %s", "read_test_file", tcl.Name)
 				}
 				wantArguments := json.RawMessage(`{"filename":"note.txt"}`)
 
