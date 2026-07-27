@@ -8,10 +8,10 @@ import (
 type Role string
 
 const (
-	RoleSystem    Role = "system"    // 系统级
-	RoleUser      Role = "user"      // 用户级
-	RoleAssistant Role = "assistant" // 模型级
-	RoleTool      Role = "tool"      // 工具级
+	RoleSystem    Role = "system"    // 系统
+	RoleUser      Role = "user"      // 用户
+	RoleAssistant Role = "assistant" // 模型
+	RoleTool      Role = "tool"      // 工具
 )
 
 type ToolCall struct { // 模型使用工具时需要生成的信息

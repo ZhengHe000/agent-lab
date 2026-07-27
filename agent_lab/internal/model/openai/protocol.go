@@ -1,6 +1,6 @@
 package openai
 
-type chatCompletionRequest struct {
+type chatCompletionRequest struct { //外部请求体
 	Model    string        `json:"model"`
 	Messages []chatMessage `json:"messages"`
 }
@@ -23,7 +23,7 @@ type chatFunctionCall struct {
 	Arguments string `json:"arguments"`
 }
 
-type chatCompletionResponse struct {
+type chatCompletionResponse struct { // 外部响应体
 	Choices []chatChoice `json:"choices"`
 }
 
