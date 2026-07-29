@@ -2,6 +2,7 @@ package openai
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -23,14 +24,59 @@ func TestClientComplete(t *testing.T) {
 			wantErr:     false,
 			wantContent: "你好",
 			testServer: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.Method != http.MethodPost {
+				if r.Method != http.MethodPost { // 检查请求方法
 					w.WriteHeader(http.StatusMethodNotAllowed)
 					return
 				}
 
-				if r.Header.Get("Authorization") != "Bearer test-Key" {
+				if r.Header.Get("Content-Type") != "application/json" {
 					w.WriteHeader(http.StatusUnauthorized)
+					t.Errorf("Header的Content-Type信息错误, want: %s,got: %s", "application/json", r.Header.Get("Content-Type"))
 					return
+				}
+
+				if r.Header.Get("Accept") != "application/json" {
+					w.WriteHeader(http.StatusUnauthorized)
+					t.Errorf("Header的Accept信息错误, want: %s,got: %s", "application/json", r.Header.Get("Accept"))
+					return
+				}
+				
+				if r.Header.Get("Authorization") != "Bearer test-Key" { // 检查Header信息
+					w.WriteHeader(http.StatusUnauthorized)
+					t.Errorf("Header的Authorization信息错误, want: %s,got: %s", "Bearer test-Key", r.Header.Get("Authorization"))
+					return
+				}
+
+				if r.ContentLength == 0 { // 检查请求体是否为空
+					w.WriteHeader(http.StatusBadRequest)
+					t.Errorf("请求体为空")
+					return
+				}
+
+				var apiResponse chatCompletionRequest
+				if err := json.NewDecoder(r.Body).Decode(&apiResponse); err != nil {
+					w.WriteHeader(http.StatusBadRequest)
+					t.Errorf("解析请求体失败: %v", err)
+					return
+				}
+
+				if apiResponse.Model != "test-model" {
+					t.Errorf("请求体Model字段错误, want: %s, got %s", "test-model", apiResponse.Model)
+				}
+
+				if len(apiResponse.Messages) == 0 {
+					w.WriteHeader(http.StatusBadRequest)
+					t.Errorf("请求体Messages字段为空")
+					return
+				}
+				msg := apiResponse.Messages[0]
+
+				if msg.Role != "user" {
+					t.Errorf("请求体Role字段错误, want: %s, got %s", "user", msg.Role)
+				}
+
+				if *msg.Content != "Yes" {
+					t.Errorf("请求体Content字段错误, want: %s, got %s", "Yes", *msg.Content)
 				}
 
 				w.Header().Set("Content-Type", "application/json")
@@ -70,7 +116,7 @@ func TestClientComplete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer tt.testServer.Close()
+			t.Cleanup(tt.testServer.Close)
 
 			testClient, err := NewClient(tt.testServer.Client(), tt.testServer.URL, "test-Key")
 			if err != nil {
@@ -90,6 +136,14 @@ func TestClientComplete(t *testing.T) {
 				}
 
 				return
+			}
+
+			if modelResponse.FinishReason != "stop" {
+				t.Fatalf("want: %s, got: %s", "stop", modelResponse.FinishReason)
+			}
+
+			if modelResponse.Message.Role != model.RoleAssistant {
+				t.Fatalf("want: %s, got: %s", model.RoleAssistant, modelResponse.Message.Role)
 			}
 
 			if tt.wantContent != "" {
