@@ -37,8 +37,8 @@ func NewClient(
 
 	return &Client{ // 返回组装结构体的地址和nil
 		httpClient: httpClient,
-		endpoint:   endpoint,
-		apiKey:     apiKey,
+		endpoint:   strings.TrimSpace(endpoint),
+		apiKey:     strings.TrimSpace(apiKey),
 	}, nil
 }
 

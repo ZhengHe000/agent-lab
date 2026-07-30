@@ -1,61 +1,64 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
-type Config struct { // AIAPI请求变量
-	APIKey         string        `json:"apikey"`
-	Model          string        `json:"model"`
-	LLMAPIURL      string        `json:"apiurl"`
-	Method         string        `json:"method"`
-	RequestTimeout time.Duration `json:"timeout"`
-	Prompt         string        `json:"prompt"`
+type Config struct {
+	Model ModelConfig
+	Agent AgentConfig
 }
 
-func LoadConfig(method string) *Config { // 装配AIAPI请求变量
-	key, exists := os.LookupEnv("AI_API_KEY")
-	if !exists {
-		log.Fatal("未从环境中找到, AI_API_KEY装配失败, 缺失变量为关键值, 中断全局")
-	}
-	if key == "" {
-		log.Fatal("环境配置异常, AI_API_KEY环境变量名被配置, 但装配时得到空值, 中断全局")
-	}
-	model, exists := os.LookupEnv("MODEL")
-	if !exists {
-		log.Println("未从环境中找到, MODEL装配失败, 缺失变量为非关键值, 后续执行使用默认值")
-		model = "deepseek-v4-pro"
-	}
-	llmAPIURL, exists := os.LookupEnv("LLM_API_URL")
-	if !exists {
-		log.Println("未从环境中找到, LLM_API_URL装配失败, 缺失变量为非关键值, 后续执行使用默认值")
-		llmAPIURL = "https://api.deepseek.com/chat/completions"
-	}
-	prompt, exists := os.LookupEnv("SYSTEM_PROMPT")
-	if !exists {
-		log.Println("未从环境中找到, SYSTEM_PROMPT装配失败, 缺失变量为非关键值, 后续执行使用默认值")
-		prompt = `你是Noah,关于编程问题默认使用go语言解答,说话精炼不啰嗦,先总结回复结论性内容,除非追问否则不要长篇大论细节,面对理论性问题讲清理解逻辑和实现链路`
-	}
-	timeoutStr, exists := os.LookupEnv("REQUEST_TIMEOUT") // 局部超时逻辑增加自由度,函数内不使用默认http.Client设置兜底
-	if !exists {
-		log.Println("未从环境中找到, REQUEST_TIMEOUT装配失败, 缺失变量为非关键值, 后续执行使用默认值")
-		timeoutStr = "60s"
+type ModelConfig struct {
+	APIKey   string        // 模型API密钥
+	Name     string        // 模型名称
+	Endpoint string        // 模型API的完整URL路径
+	Timeout  time.Duration // 客户端超时
+}
+
+type AgentConfig struct {
+	SystemPrompt string // 模型系统提示词
+}
+
+func envOrDefault(key, defaultValue string) string { // 辅助函数, 当一项[环境配置]可以接受[默认选项]时使用该函数
+	envValue := strings.TrimSpace(os.Getenv(key)) // 读取环境变量的key参数的值
+	if envValue == "" {                           // 如果[环境变量]中该值为空, 使用传入的[defaultValue参数]作为默认值
+		return defaultValue
 	}
 
-	requestTimeout, err := time.ParseDuration(timeoutStr) // 转换超时配置
+	return envValue
+}
+
+func LoadConfig() (Config, error) {
+	apiKey := strings.TrimSpace(os.Getenv("AI_API_KEY")) // 获取环境变量的[AI_API_KEY]值
+	if apiKey == "" {
+		return Config{}, fmt.Errorf("[环境变量] AI_API_KEY 未配置")
+	}
+
+	modelName := envOrDefault("MODEL", "deepseek-v4-pro")                                                                                                                                                       // 使用存在默认值的辅助函数获取[MODEL]值
+	modelEndpoint := envOrDefault("LLM_API_URL", "https://api.deepseek.com/chat/completions")                                                                                                                   // 使用存在默认值的辅助函数获取[LLM_API_URL]值
+	modelTimeoutText := envOrDefault("REQUEST_TIMEOUT", "60s")                                                                                                                                                  // 使用存在默认值的辅助函数获取[REQUEST_TIMEOUTL]值
+	prompt := envOrDefault("SYSTEM_PROMPT", `你是智能生命体:Noah|小名:诺诺,你的思维逻辑清晰,不受情绪影响,对人类各领域技能实践经验为满级,1.提问模糊时直接反问最多3个解决问题需要的关键变量,2.编程默认Golang,优先回复结论性内容(可直接运行的代码片段或具体方案),不主动发散解释底层原理,3.被追问细节时按照工程拓展性最优选择讲清设计逻辑和代码实现`) // 使用存在默认值的辅助函数获取[SYSTEM_PROMPT]值
+
+	timeout, err := time.ParseDuration(modelTimeoutText) // 将得到的string类型的Timeout 解析为time.Duration类型
 	if err != nil {
-		log.Println("<超时>变量转换失败, 缺失变量为非关键值, 后续执行使用默认值")
-		requestTimeout = 60 * time.Second
+		return Config{}, fmt.Errorf("[环境变量] REQUEST_TIMEOUT 解析失败, 错误: %w ", err)
 	}
 
-	return &Config{
-		APIKey:         key,
-		Model:          model,
-		LLMAPIURL:      llmAPIURL,
-		Method:         method,
-		RequestTimeout: requestTimeout,
-		Prompt:         prompt,
+	config := Config{ // 组装Config
+		Model: ModelConfig{
+			APIKey:   apiKey,
+			Name:     modelName,
+			Endpoint: modelEndpoint,
+			Timeout:  timeout,
+		},
+		Agent: AgentConfig{
+			SystemPrompt: prompt,
+		},
 	}
+
+	return config, nil
 }
