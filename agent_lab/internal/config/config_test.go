@@ -139,7 +139,7 @@ func TestLoadConfig(t *testing.T) {
 					Timeout:  testTimeout1,
 				},
 				Agent: AgentConfig{
-					SystemPrompt: `你是智能生命体:Noah|小名:诺诺,你的思维逻辑清晰,不受情绪影响,对人类各领域技能实践经验为满级,1.提问模糊时直接反问最多3个解决问题需要的关键变量,2.编程默认Golang,优先回复结论性内容(可直接运行的代码片段或具体方案),不主动发散解释底层原理,3.被追问细节时按照工程拓展性最优选择讲清设计逻辑和代码实现`,
+					SystemPrompt: defaultSystemPrompt,
 				},
 			},
 		},
@@ -147,6 +147,16 @@ func TestLoadConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			for _, key := range []string{ // 将要测试的配置字段设置为"" 来保证后续测试基础环境干净
+				"AI_API_KEY",
+				"MODEL",
+				"LLM_API_URL",
+				"REQUEST_TIMEOUT",
+				"SYSTEM_PROMPT",
+			} {
+				t.Setenv(key, "")
+			}
+
 			for k, v := range tt.testEnvSet {
 				t.Setenv(k, v)
 			}
