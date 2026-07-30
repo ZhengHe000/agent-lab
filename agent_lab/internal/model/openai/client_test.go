@@ -135,12 +135,12 @@ func TestClientComplete(t *testing.T) {
 
 			if tt.wantErr {
 				if err == nil {
-					t.Fatalf("期望出错的实例没有出错, 得到的modelResponse: %v", modelResponse)
+					t.Fatalf("期望出错但err为空, Got modelResponse: %v", modelResponse)
 				}
 
 				empty := model.Response{}
 				if !reflect.DeepEqual(modelResponse, empty) {
-					t.Fatalf("期望错误时返回空结构信息, 但实际出现了值: %v", modelResponse)
+					t.Fatalf("期望错误时返回空结构信息, Got modelResponse: %v", modelResponse)
 				}
 
 				return
