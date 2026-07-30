@@ -40,7 +40,7 @@ func TestClientComplete(t *testing.T) {
 					t.Errorf("Header的Accept信息错误, want: %s,got: %s", "application/json", r.Header.Get("Accept"))
 					return
 				}
-				
+
 				if r.Header.Get("Authorization") != "Bearer test-Key" { // 检查Header信息
 					w.WriteHeader(http.StatusUnauthorized)
 					t.Errorf("Header的Authorization信息错误, want: %s,got: %s", "Bearer test-Key", r.Header.Get("Authorization"))
@@ -69,7 +69,13 @@ func TestClientComplete(t *testing.T) {
 					t.Errorf("请求体Messages字段为空")
 					return
 				}
+
 				msg := apiResponse.Messages[0]
+
+				if msg.Content == nil {
+					t.Errorf("请求体 Content 为 nil")
+					return
+				}
 
 				if msg.Role != "user" {
 					t.Errorf("请求体Role字段错误, want: %s, got %s", "user", msg.Role)
@@ -123,7 +129,9 @@ func TestClientComplete(t *testing.T) {
 				t.Fatalf("测试客户端创建失败, 错误: %v", err)
 			}
 
-			modelResponse, err := testClient.Complete(context.Background(), tt.modelRequest)
+			var modelClient model.Model = testClient
+
+			modelResponse, err := modelClient.Complete(context.Background(), tt.modelRequest)
 
 			if tt.wantErr {
 				if err == nil {
@@ -136,6 +144,10 @@ func TestClientComplete(t *testing.T) {
 				}
 
 				return
+			}
+
+			if !tt.wantErr && err != nil {
+				t.Fatalf("Complete() 出现意外错误: %v", err)
 			}
 
 			if modelResponse.FinishReason != "stop" {
