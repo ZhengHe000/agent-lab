@@ -39,6 +39,28 @@ func TestLoadConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "[环境配置值]存在空格 正常配置和读取",
+			testEnvSet: map[string]string{
+				"AI_API_KEY":      "   test-key   ",
+				"MODEL":           "   test-model   ",
+				"LLM_API_URL":     "test-URL",
+				"REQUEST_TIMEOUT": "10s",
+				"SYSTEM_PROMPT":   "test-prompt",
+			},
+			wantErr: false,
+			wantConfig: Config{
+				Model: ModelConfig{
+					APIKey:   "test-key",
+					Name:     "test-model",
+					Endpoint: "test-URL",
+					Timeout:  testTimeout1,
+				},
+				Agent: AgentConfig{
+					SystemPrompt: "test-prompt",
+				},
+			},
+		},
+		{
 			name: "缺少 AI_API_KEY",
 			testEnvSet: map[string]string{
 				"MODEL":           "test-model",
