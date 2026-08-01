@@ -25,21 +25,21 @@ func run() error {
 		return fmt.Errorf("加载环境文件失败: %w", err)
 	}
 
-	config, err := config.LoadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		return fmt.Errorf("加载程序配置失败: %w", err)
 	}
 
 	httpClient := &http.Client{
-		Timeout: config.Model.Timeout,
+		Timeout: cfg.Model.Timeout,
 	}
 
-	client, err := openai.NewClient(httpClient, config.Model.Endpoint, config.Model.APIKey)
+	client, err := openai.NewClient(httpClient, cfg.Model.Endpoint, cfg.Model.APIKey)
 	if err != nil {
 		return fmt.Errorf("客户端配置失败: %w", err)
 	}
 
-	runtime, err := agent.NewRuntime(client, config.Model.Name, config.Agent.SystemPrompt)
+	runtime, err := agent.NewRuntime(client, cfg.Model.Name, cfg.Agent.SystemPrompt)
 	if err != nil {
 		return fmt.Errorf("创建Agent运行器失败: %w", err)
 	}
@@ -64,7 +64,7 @@ func run() error {
 		}
 
 		if input == "exit" {
-			continue
+			return nil
 		}
 
 		reply, err := runtime.RunTurn(context.Background(), input)

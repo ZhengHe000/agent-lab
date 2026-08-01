@@ -20,7 +20,7 @@ func TestLoadConfig(t *testing.T) {
 			name: "正常配置和读取",
 			testEnvSet: map[string]string{
 				"AI_API_KEY":      "test-key",
-				"MODEL":           "test-model",
+				"MODEL":           defaultModelName,
 				"LLM_API_URL":     "test-URL",
 				"REQUEST_TIMEOUT": "10s",
 				"SYSTEM_PROMPT":   "test-prompt",
@@ -29,7 +29,7 @@ func TestLoadConfig(t *testing.T) {
 			wantConfig: Config{
 				Model: ModelConfig{
 					APIKey:   "test-key",
-					Name:     "test-model",
+					Name:     defaultModelName,
 					Endpoint: "test-URL",
 					Timeout:  testTimeout1,
 				},
@@ -42,7 +42,7 @@ func TestLoadConfig(t *testing.T) {
 			name: "[环境配置值]存在空格 正常配置和读取",
 			testEnvSet: map[string]string{
 				"AI_API_KEY":      "   test-key   ",
-				"MODEL":           "   test-model   ",
+				"MODEL":           defaultModelName,
 				"LLM_API_URL":     "test-URL",
 				"REQUEST_TIMEOUT": "10s",
 				"SYSTEM_PROMPT":   "test-prompt",
@@ -51,7 +51,7 @@ func TestLoadConfig(t *testing.T) {
 			wantConfig: Config{
 				Model: ModelConfig{
 					APIKey:   "test-key",
-					Name:     "test-model",
+					Name:     defaultModelName,
 					Endpoint: "test-URL",
 					Timeout:  testTimeout1,
 				},
@@ -63,7 +63,7 @@ func TestLoadConfig(t *testing.T) {
 		{
 			name: "缺少 AI_API_KEY",
 			testEnvSet: map[string]string{
-				"MODEL":           "test-model",
+				"MODEL":           defaultModelName,
 				"LLM_API_URL":     "test-URL",
 				"REQUEST_TIMEOUT": "10s",
 				"SYSTEM_PROMPT":   "test-prompt",
@@ -82,7 +82,7 @@ func TestLoadConfig(t *testing.T) {
 			wantConfig: Config{
 				Model: ModelConfig{
 					APIKey:   "test-key",
-					Name:     "deepseek-v4-pro",
+					Name:     defaultModelName,
 					Endpoint: "test-URL",
 					Timeout:  testTimeout1,
 				},
@@ -95,7 +95,7 @@ func TestLoadConfig(t *testing.T) {
 			name: "缺少 LLM_API_URL",
 			testEnvSet: map[string]string{
 				"AI_API_KEY":      "test-key",
-				"MODEL":           "test-model",
+				"MODEL":           defaultModelName,
 				"REQUEST_TIMEOUT": "10s",
 				"SYSTEM_PROMPT":   "test-prompt",
 			},
@@ -103,7 +103,7 @@ func TestLoadConfig(t *testing.T) {
 			wantConfig: Config{
 				Model: ModelConfig{
 					APIKey:   "test-key",
-					Name:     "test-model",
+					Name:     defaultModelName,
 					Endpoint: "https://api.deepseek.com/chat/completions",
 					Timeout:  testTimeout1,
 				},
@@ -116,7 +116,7 @@ func TestLoadConfig(t *testing.T) {
 			name: "缺少 REQUEST_TIMEOUT",
 			testEnvSet: map[string]string{
 				"AI_API_KEY":    "test-key",
-				"MODEL":         "test-model",
+				"MODEL":         defaultModelName,
 				"LLM_API_URL":   "test-URL",
 				"SYSTEM_PROMPT": "test-prompt",
 			},
@@ -124,7 +124,7 @@ func TestLoadConfig(t *testing.T) {
 			wantConfig: Config{
 				Model: ModelConfig{
 					APIKey:   "test-key",
-					Name:     "test-model",
+					Name:     defaultModelName,
 					Endpoint: "test-URL",
 					Timeout:  testTimeout2,
 				},
@@ -137,7 +137,7 @@ func TestLoadConfig(t *testing.T) {
 			name: "REQUEST_TIMEOUT 格式错误",
 			testEnvSet: map[string]string{
 				"AI_API_KEY":      "test-key",
-				"MODEL":           "test-model",
+				"MODEL":           defaultModelName,
 				"LLM_API_URL":     "test-URL",
 				"REQUEST_TIMEOUT": "invalid-duration",
 				"SYSTEM_PROMPT":   "test-prompt",
@@ -148,7 +148,7 @@ func TestLoadConfig(t *testing.T) {
 			name: "缺少 SYSTEM_PROMPT",
 			testEnvSet: map[string]string{
 				"AI_API_KEY":      "test-key",
-				"MODEL":           "test-model",
+				"MODEL":           defaultModelName,
 				"LLM_API_URL":     "test-URL",
 				"REQUEST_TIMEOUT": "10s",
 			},
@@ -156,7 +156,7 @@ func TestLoadConfig(t *testing.T) {
 			wantConfig: Config{
 				Model: ModelConfig{
 					APIKey:   "test-key",
-					Name:     "test-model",
+					Name:     defaultModelName,
 					Endpoint: "test-URL",
 					Timeout:  testTimeout1,
 				},
