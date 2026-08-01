@@ -29,11 +29,11 @@ func NewRuntime(llm model.Model, modelName string, systemPrompt string) (*Runtim
 
 	runtime := &Runtime{ // 组装Runtime并取地址
 		llm:       llm,
-		modelName: modelName,
+		modelName: strings.TrimSpace(modelName),
 		messages: []model.Message{
 			model.Message{
 				Role:    model.RoleSystem,
-				Content: systemPrompt,
+				Content: strings.TrimSpace(systemPrompt),
 			},
 		},
 	}
@@ -42,7 +42,8 @@ func NewRuntime(llm model.Model, modelName string, systemPrompt string) (*Runtim
 }
 
 func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
-	if strings.TrimSpace(input) == "" { // 检查用户输入
+	input = strings.TrimSpace(input)
+	if input == "" { // 检查用户输入
 		return "", fmt.Errorf("input 不能为空")
 	}
 
@@ -65,15 +66,15 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 	msg := modelResponse.Message // 将modelResponse.Message简化为msg
 
 	if msg.Role != model.RoleAssistant { // 检查回复身份是否是model.RoleAssistant[模型]
-		return "", fmt.Errorf("响应[Role]错误, want: %s, got: %s", model.RoleAssistant, msg.Role)
+		return "", fmt.Errorf("%w want: %s, got: %s", ErrResponseRoleError, model.RoleAssistant, msg.Role)
 	}
 
 	if len(msg.ToolCalls) != 0 { // 当存在工具调用时直接返回 [暂时使用!]
-		return "", fmt.Errorf("不支持工具调用")
+		return "", ErrToolCallsUnsupported
 	}
 
 	if msg.Content == "" {
-		return "", fmt.Errorf("无效响应")
+		return "", ErrEmptyContent
 	}
 
 	r.messages = append(candidate, msg) // 将响应model.Message追加进r.messages
