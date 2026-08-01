@@ -149,12 +149,36 @@ func TestRunTurn(t *testing.T) {
 			wantStr: "",
 		},
 		{
-			name: "响应 Content 为空",
+			name: "响应 Content 为空[1]",
 			testFakeModel: &fakeModel{
 				Response: model.Response{
 					Message: model.Message{
 						Role:    model.RoleAssistant,
 						Content: "",
+					},
+					FinishReason: "stop",
+				},
+				err: nil,
+			},
+			testModelName:    "test-model",
+			testSystemPrompt: testModelSystemPrompt,
+			testInput:        testUserInput,
+			wantErr:          ErrEmptyContent,
+			wantMessages: []model.Message{
+				model.Message{
+					Role:    model.RoleSystem,
+					Content: testModelSystemPrompt,
+				},
+			},
+			wantStr: "",
+		},
+		{
+			name: "响应 Content 为空[2]]",
+			testFakeModel: &fakeModel{
+				Response: model.Response{
+					Message: model.Message{
+						Role:    model.RoleAssistant,
+						Content: " \n\t",
 					},
 					FinishReason: "stop",
 				},

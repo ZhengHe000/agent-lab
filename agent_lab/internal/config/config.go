@@ -7,7 +7,10 @@ import (
 	"time"
 )
 
-const defaultSystemPrompt = `你是智能专家Noah,以专业角度和成熟冷静的逻辑链来解决问题和对话` // 默认提示词
+const defaultModelName = "deepseek-v4-flash"                        // 默认模型
+const defaultEndpoint = "https://api.deepseek.com/chat/completions" // 默认URL
+const defaultTimeout = "60s"                                        // 默认超时
+const defaultSystemPrompt = `你是智能专家Noah,以专业角度和成熟冷静的逻辑链来解决问题和对话`     // 默认提示词
 
 type Config struct {
 	Model ModelConfig
@@ -40,10 +43,10 @@ func LoadConfig() (Config, error) {
 		return Config{}, fmt.Errorf("[环境变量] AI_API_KEY 未配置")
 	}
 
-	modelName := envOrDefault("MODEL", "deepseek-v4-flash")                                   // 使用存在默认值的辅助函数获取[MODEL]值
-	modelEndpoint := envOrDefault("LLM_API_URL", "https://api.deepseek.com/chat/completions") // 使用存在默认值的辅助函数获取[LLM_API_URL]值
-	modelTimeoutText := envOrDefault("REQUEST_TIMEOUT", "60s")                                // 使用存在默认值的辅助函数获取[REQUEST_TIMEOUTL]值
-	prompt := envOrDefault("SYSTEM_PROMPT", defaultSystemPrompt)                              // 使用存在默认值的辅助函数获取[SYSTEM_PROMPT]值
+	modelName := envOrDefault("MODEL", defaultModelName)                // 使用存在默认值的辅助函数获取[MODEL]值
+	modelEndpoint := envOrDefault("LLM_API_URL", defaultEndpoint)       // 使用存在默认值的辅助函数获取[LLM_API_URL]值
+	modelTimeoutText := envOrDefault("REQUEST_TIMEOUT", defaultTimeout) // 使用存在默认值的辅助函数获取[REQUEST_TIMEOUTL]值
+	prompt := envOrDefault("SYSTEM_PROMPT", defaultSystemPrompt)        // 使用存在默认值的辅助函数获取[SYSTEM_PROMPT]值
 
 	timeout, err := time.ParseDuration(modelTimeoutText) // 将得到的string类型的Timeout 解析为time.Duration类型
 	if err != nil {
