@@ -73,7 +73,7 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 		return "", ErrToolCallsUnsupported
 	}
 
-	if msg.Content == "" {
+	if strings.TrimSpace(msg.Content) == "" {
 		return "", ErrEmptyContent
 	}
 
