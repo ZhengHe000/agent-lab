@@ -40,7 +40,7 @@ func LoadConfig() (Config, error) {
 		return Config{}, fmt.Errorf("[环境变量] AI_API_KEY 未配置")
 	}
 
-	modelName := envOrDefault("MODEL", "deepseek-v4-pro")                                     // 使用存在默认值的辅助函数获取[MODEL]值
+	modelName := envOrDefault("MODEL", "deepseek-v4-flash")                                   // 使用存在默认值的辅助函数获取[MODEL]值
 	modelEndpoint := envOrDefault("LLM_API_URL", "https://api.deepseek.com/chat/completions") // 使用存在默认值的辅助函数获取[LLM_API_URL]值
 	modelTimeoutText := envOrDefault("REQUEST_TIMEOUT", "60s")                                // 使用存在默认值的辅助函数获取[REQUEST_TIMEOUTL]值
 	prompt := envOrDefault("SYSTEM_PROMPT", defaultSystemPrompt)                              // 使用存在默认值的辅助函数获取[SYSTEM_PROMPT]值
