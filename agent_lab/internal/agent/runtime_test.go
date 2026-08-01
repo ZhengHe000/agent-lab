@@ -71,7 +71,7 @@ func TestRunTurn(t *testing.T) {
 			wantStr: testAssistantContent,
 		},
 		{
-			name: "成功调用",
+			name: "失败调用",
 			testFakeModel: &fakeModel{
 				Response: model.Response{
 					Message: model.Message{
@@ -86,6 +86,84 @@ func TestRunTurn(t *testing.T) {
 			testSystemPrompt: testModelSystemPrompt,
 			testInput:        testUserInput,
 			wantErr:          ErrModelInvocationFailed,
+			wantMessages: []model.Message{
+				model.Message{
+					Role:    model.RoleSystem,
+					Content: testModelSystemPrompt,
+				},
+			},
+			wantStr: "",
+		},
+		{
+			name: "响应角色不是 assistant",
+			testFakeModel: &fakeModel{
+				Response: model.Response{
+					Message: model.Message{
+						Role:    model.RoleTool,
+						Content: testAssistantContent,
+					},
+					FinishReason: "stop",
+				},
+				err: nil,
+			},
+			testModelName:    "test-model",
+			testSystemPrompt: testModelSystemPrompt,
+			testInput:        testUserInput,
+			wantErr:          ErrResponseRoleError,
+			wantMessages: []model.Message{
+				model.Message{
+					Role:    model.RoleSystem,
+					Content: testModelSystemPrompt,
+				},
+			},
+			wantStr: "",
+		},
+		{
+			name: "响应包含暂不支持的 ToolCalls",
+			testFakeModel: &fakeModel{
+				Response: model.Response{
+					Message: model.Message{
+						Role:    model.RoleAssistant,
+						Content: testAssistantContent,
+						ToolCalls: []model.ToolCall{
+							model.ToolCall{
+								ID:   "错误测试使用",
+								Name: "错误测试使用",
+							},
+						},
+					},
+					FinishReason: "stop",
+				},
+				err: nil,
+			},
+			testModelName:    "test-model",
+			testSystemPrompt: testModelSystemPrompt,
+			testInput:        testUserInput,
+			wantErr:          ErrToolCallsUnsupported,
+			wantMessages: []model.Message{
+				model.Message{
+					Role:    model.RoleSystem,
+					Content: testModelSystemPrompt,
+				},
+			},
+			wantStr: "",
+		},
+		{
+			name: "响应 Content 为空",
+			testFakeModel: &fakeModel{
+				Response: model.Response{
+					Message: model.Message{
+						Role:    model.RoleAssistant,
+						Content: "",
+					},
+					FinishReason: "stop",
+				},
+				err: nil,
+			},
+			testModelName:    "test-model",
+			testSystemPrompt: testModelSystemPrompt,
+			testInput:        testUserInput,
+			wantErr:          ErrEmptyContent,
 			wantMessages: []model.Message{
 				model.Message{
 					Role:    model.RoleSystem,
