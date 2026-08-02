@@ -173,7 +173,7 @@ func TestRunTurn(t *testing.T) {
 			wantStr: "",
 		},
 		{
-			name: "响应 Content 为空[2]]",
+			name: "响应 Content 为空[2]",
 			testFakeModel: &fakeModel{
 				Response: model.Response{
 					Message: model.Message{
