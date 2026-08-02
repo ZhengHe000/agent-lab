@@ -51,7 +51,7 @@ func TestLoadConfig(t *testing.T) {
 			wantConfig: Config{
 				Model: ModelConfig{
 					APIKey:   "test-key",
-					Name:    "test-model",
+					Name:     "test-model",
 					Endpoint: "test-URL",
 					Timeout:  testTimeout1,
 				},
