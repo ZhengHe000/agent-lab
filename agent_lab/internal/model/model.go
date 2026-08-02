@@ -14,6 +14,12 @@ const (
 	RoleTool      Role = "tool"      // 工具
 )
 
+type ToolDefinition struct { // 模型层对工具的说明
+	Name string // 一个工具名 格式遵守 小写字母+下划线_ 的形式
+	Description string // 面向模型对工具何时使用的描述
+	Parameters json.RawMessage // 保存工具参数的 JSON Schema(格式规范)
+}
+
 type ToolCall struct { // 模型使用工具时需要生成的信息
 	ID        string          // 模型为一个工具调用分配的标识, 在工具调用结果封装时原封不动返回给模型, 模型看到这个标识就知道当前这份数据来自什么
 	Name      string          // 工具名
@@ -29,7 +35,8 @@ type Message struct { // 通用消息
 
 type Request struct {
 	Model    string // 模型名
-	Messages []Message
+	Messages []Message // 通用消息集合
+	Tools []ToolDefinition // 工具描述集合
 }
 
 type Response struct {
