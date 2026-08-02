@@ -15,9 +15,9 @@ const (
 )
 
 type ToolDefinition struct { // 模型层对工具的说明
-	Name string // 一个工具名 格式遵守 小写字母+下划线_ 的形式
-	Description string // 面向模型对工具何时使用的描述
-	Parameters json.RawMessage // 保存工具参数的 JSON Schema(格式规范)
+	Name        string          // 一个工具名 格式遵守 小写字母+下划线_ 的形式
+	Description string          // 面向模型对工具何时使用的描述
+	Parameters  json.RawMessage // 保存工具参数的 JSON Schema(格式规范)
 }
 
 type ToolCall struct { // 模型使用工具时需要生成的信息
@@ -34,9 +34,9 @@ type Message struct { // 通用消息
 }
 
 type Request struct {
-	Model    string // 模型名
-	Messages []Message // 通用消息集合
-	Tools []ToolDefinition // 工具描述集合
+	Model    string           // 模型名
+	Messages []Message        // 通用消息集合
+	Tools    []ToolDefinition // 工具描述集合
 }
 
 type Response struct {
