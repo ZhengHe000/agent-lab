@@ -48,12 +48,7 @@ func TestReadTextFileTool_Execute_Success(t *testing.T) {
 
 func TestReadTextFileTool_Execute_InvalidJSON(t *testing.T) {
 	testDir := t.TempDir()
-	testPath := filepath.Join(testDir, "target.txt")
-
-	if err := os.WriteFile(testPath, []byte("zero"), 0o644); err != nil {
-		t.Fatalf("准备测试文件失败: %v", err)
-	}
-
+	
 	testArgs := json.RawMessage(`{"filename":"//\\ww.dd"`)
 
 	testTool := newReadTextFileToolInDir(testDir)
