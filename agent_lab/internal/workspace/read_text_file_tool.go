@@ -26,7 +26,7 @@ func newReadTextFileToolInDir(dir string) *ReadTextFileTool { // 用于在worksp
 }
 
 type readTextFileArguments struct { // 工具内部协议
-	FileName string `json:"filename"`
+	Filename string `json:"filename"`
 }
 
 var readTextFileParameters = json.RawMessage(`{
@@ -44,7 +44,7 @@ var readTextFileParameters = json.RawMessage(`{
 func (r *ReadTextFileTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "read_text_file",
-		Description: "读取受控工作区指定中文本文件内容的完整内容." +
+		Description: "读取受控工作区中指定文本文件的完整内容." +
 			"当用户需要查看某个工作区文本文件时使用.",
 		Parameters: readTextFileParameters,
 	}
@@ -60,12 +60,12 @@ func (r *ReadTextFileTool) Execute(ctx context.Context, arguments json.RawMessag
 		return "", fmt.Errorf("解析 read_text_file 参数失败: %w", err)
 	}
 
-	content, err := readTextFileInDir(r.dir, args.FileName)
+	content, err := readTextFileInDir(r.dir, args.Filename)
 	if err != nil {
 		return "", fmt.Errorf("执行 read_text_file 失败: %w", err)
 	}
 
-	return content, err
+	return content, nil
 }
 
 var _ tool.Tool = (*ReadTextFileTool)(nil)
