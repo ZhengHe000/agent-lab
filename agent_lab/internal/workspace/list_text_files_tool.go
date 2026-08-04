@@ -13,7 +13,7 @@ type ListTextFilesTool struct { // 列出受控工作区全部文件的Tool
 	dir string
 }
 
-func NewListTextFilesTool(dir string) *ListTextFilesTool { // 受控工作区
+func NewListTextFilesTool() *ListTextFilesTool { // 受控工作区
 	return &ListTextFilesTool{
 		dir: workspaceDir,
 	}
