@@ -48,7 +48,7 @@ func TestReadTextFileTool_Execute_Success(t *testing.T) {
 
 func TestReadTextFileTool_Execute_InvalidJSON(t *testing.T) {
 	testDir := t.TempDir()
-	
+
 	testArgs := json.RawMessage(`{"filename":"//\\ww.dd"`)
 
 	testTool := newReadTextFileToolInDir(testDir)
