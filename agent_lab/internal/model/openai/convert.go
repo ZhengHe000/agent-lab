@@ -3,6 +3,7 @@ package openai
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model"
 )
@@ -87,9 +88,9 @@ func toChatCompletionRequest(request model.Request) (chatCompletionRequest, erro
 	if len(request.Messages) == 0 {
 		return chatCompletionRequest{}, fmt.Errorf("内部请求信息的Messages为空, 无法转换为外部请求")
 	}
-	reqMessages := make([]chatMessage, 0, len(request.Messages)) // 创建变量容器
 
-	for _, modelReqMessage := range request.Messages { // 遍历内部信息切片, 每轮使用toChatMessage函数处理转换
+	reqMessages := make([]chatMessage, 0, len(request.Messages)) // 创建变量容器
+	for _, modelReqMessage := range request.Messages {           // 遍历内部信息切片, 每轮使用toChatMessage函数处理转换
 		chatMessage, err := toChatMessage(modelReqMessage)
 		if err != nil {
 			return chatCompletionRequest{}, err
@@ -97,9 +98,24 @@ func toChatCompletionRequest(request model.Request) (chatCompletionRequest, erro
 		reqMessages = append(reqMessages, chatMessage) // 转换成功追加进容器
 	}
 
+	var chatTools []chatToolDefinition
+	if len(request.Tools) > 0 {
+		chatTools = make([]chatToolDefinition, 0, len(request.Tools))
+
+		for _, chatTool := range request.Tools {
+			chatDefinition, err := toChatToolDefinition(chatTool)
+			if err != nil {
+				return chatCompletionRequest{}, err
+			}
+
+			chatTools = append(chatTools, chatDefinition)
+		}
+	}
+
 	chatCompletionRequest := chatCompletionRequest{ // 拼接目标字段
 		Model:    request.Model,
 		Messages: reqMessages,
+		Tools:    chatTools,
 	}
 	return chatCompletionRequest, nil
 }
@@ -145,4 +161,29 @@ func toChatMessage(modelMessage model.Message) (chatMessage, error) {
 	}
 
 	return chatMessage, nil
+}
+
+func toChatToolDefinition(definition model.ToolDefinition) (chatToolDefinition, error) {
+	name := strings.TrimSpace(definition.Name)
+	if name == "" {
+		return chatToolDefinition{}, fmt.Errorf("工具名称不能为空")
+	}
+
+	description := strings.TrimSpace(definition.Description)
+	if description == "" {
+		return chatToolDefinition{}, fmt.Errorf("工具 %q 的描述不能为空", name)
+	}
+
+	if !json.Valid(definition.Parameters) {
+		return chatToolDefinition{}, fmt.Errorf("工具 %q 的参数 Schema 不是合法JSON", name)
+	}
+
+	return chatToolDefinition{
+		Type: "function",
+		Function: chatFunctionDefinition{
+			Name:        name,
+			Description: description,
+			Parameters:  definition.Parameters,
+		},
+	}, nil
 }

@@ -319,6 +319,76 @@ func TestToCompletionRequest(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "包含工具定义",
+			wantErr: false,
+			testModelRequest: model.Request{
+				Model: "test-model",
+				Messages: []model.Message{
+					model.Message{
+						Role:    model.RoleUser,
+						Content: "查看文件",
+					},
+				},
+				Tools: []model.ToolDefinition{
+					model.ToolDefinition{
+						Name:        "test_read_text_file",
+						Description: "测试-用户需要查看文件内容时使用",
+						Parameters: json.RawMessage(`{
+						"type":"object",
+					"properties":{
+						"filename":{"type":"string"}
+					},
+					"required":["filename"]
+					}`),
+					},
+				},
+			},
+			check: func(t *testing.T, chatReq chatCompletionRequest) {
+				t.Helper()
+
+				if len(chatReq.Tools) != 1 {
+					t.Fatalf("Tools数量错误, want: 1, got: %d", len(chatReq.Tools))
+				}
+
+				got := chatReq.Tools[0]
+				if got.Type != "function" {
+					t.Fatalf("工具类型错误, want: function, got: %q", got.Type)
+				}
+
+				if got.Function.Name != "test_read_text_file" {
+					t.Fatalf("工具名称错误, got: %q", got.Function.Name)
+				}
+
+				if got.Function.Description != "测试-用户需要查看文件内容时使用" {
+					t.Fatalf("工具描述错误, got: %q", got.Function.Description)
+				}
+
+				if !json.Valid(got.Function.Parameters) {
+					t.Fatal("转换后的工具参数不是合法JSON")
+				}
+			},
+		},
+		{
+			name: "工具参数Schema非法",
+			wantErr: true,
+			testModelRequest: model.Request{
+				Model: "test-model",
+				Messages: []model.Message{
+					model.Message{
+						Role: model.RoleUser,
+						Content: "test",
+					},
+				},
+				Tools: []model.ToolDefinition{
+					model.ToolDefinition{
+						Name: "test_read_text_file",
+						Description: "测试-用户需要查看文件内容时使用",
+						Parameters: json.RawMessage(`{"type":`),
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
