@@ -36,7 +36,8 @@ func NewRegistry(tools ...Tool) (*Registry, error) {
 			return nil, fmt.Errorf("工具名 %q 已存在", name)
 		}
 
-		if definition.Description == "" {
+		description := strings.TrimSpace(definition.Description)
+		if description == "" {
 			return nil, fmt.Errorf("工具 %q 的描述不能为空", name)
 		}
 
