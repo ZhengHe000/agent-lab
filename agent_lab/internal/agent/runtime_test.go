@@ -2,12 +2,14 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model"
+	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 )
 
 const testModelSystemPrompt = "test-SystemPrompt" // 没有特殊[提示词]的测试需求时 使用该变量即可
@@ -25,6 +27,16 @@ func (f *fakeModel) Complete(ctx context.Context, request model.Request) (model.
 	return f.Response, f.err
 }
 
+func newEmptyTestRegistry(t *testing.T) *tool.Registry {
+	t.Helper()
+
+	toolsRegistry, err := tool.NewRegistry()
+	if err != nil {
+		t.Fatalf("创建空测试注册表失败: %v", err)
+	}
+	return toolsRegistry
+}
+
 var _ model.Model = (*fakeModel)(nil) // 编译器确认fakeModel实现了model.Model接口
 
 func TestRunTurn(t *testing.T) {
@@ -34,6 +46,8 @@ func TestRunTurn(t *testing.T) {
 		testModelName    string
 		testSystemPrompt string
 		testInput        string
+		testTools        []model.ToolDefinition
+		wantLen          int64
 		wantErr          error
 		wantMessages     []model.Message
 		wantStr          string
@@ -53,6 +67,7 @@ func TestRunTurn(t *testing.T) {
 			testModelName:    "test-model",
 			testSystemPrompt: testModelSystemPrompt,
 			testInput:        testUserInput,
+			testTools:        []model.ToolDefinition{},
 			wantErr:          nil,
 			wantMessages: []model.Message{
 				model.Message{
@@ -85,6 +100,7 @@ func TestRunTurn(t *testing.T) {
 			testModelName:    "test-model",
 			testSystemPrompt: testModelSystemPrompt,
 			testInput:        testUserInput,
+			testTools:        []model.ToolDefinition{},
 			wantErr:          ErrModelInvocationFailed,
 			wantMessages: []model.Message{
 				model.Message{
@@ -109,6 +125,7 @@ func TestRunTurn(t *testing.T) {
 			testModelName:    "test-model",
 			testSystemPrompt: testModelSystemPrompt,
 			testInput:        testUserInput,
+			testTools:        []model.ToolDefinition{},
 			wantErr:          ErrResponseRoleError,
 			wantMessages: []model.Message{
 				model.Message{
@@ -139,6 +156,7 @@ func TestRunTurn(t *testing.T) {
 			testModelName:    "test-model",
 			testSystemPrompt: testModelSystemPrompt,
 			testInput:        testUserInput,
+			testTools:        []model.ToolDefinition{},
 			wantErr:          ErrToolCallsUnsupported,
 			wantMessages: []model.Message{
 				model.Message{
@@ -163,6 +181,7 @@ func TestRunTurn(t *testing.T) {
 			testModelName:    "test-model",
 			testSystemPrompt: testModelSystemPrompt,
 			testInput:        testUserInput,
+			testTools:        []model.ToolDefinition{},
 			wantErr:          ErrEmptyContent,
 			wantMessages: []model.Message{
 				model.Message{
@@ -187,6 +206,7 @@ func TestRunTurn(t *testing.T) {
 			testModelName:    "test-model",
 			testSystemPrompt: testModelSystemPrompt,
 			testInput:        testUserInput,
+			testTools:        []model.ToolDefinition{},
 			wantErr:          ErrEmptyContent,
 			wantMessages: []model.Message{
 				model.Message{
@@ -200,7 +220,7 @@ func TestRunTurn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			runtime, err := NewRuntime(tt.testFakeModel, tt.testModelName, tt.testSystemPrompt) // 拿到Runtime结构体
+			runtime, err := NewRuntime(tt.testFakeModel, tt.testModelName, tt.testSystemPrompt, newEmptyTestRegistry(t)) // 拿到Runtime结构体
 			if err != nil {
 				t.Fatalf("调用[NewRuntime]获取[Runtime]结构体失败, 错误: %v", err)
 			}
@@ -247,6 +267,7 @@ func TestRunTurn(t *testing.T) {
 			wantModelRequest := model.Request{
 				Model:    runtime.modelName,
 				Messages: candidate,
+				Tools:    tt.testTools,
 			}
 
 			if !reflect.DeepEqual((*tt.testFakeModel).LastRequest, wantModelRequest) { // 将期望请求和假模型内收到的真实请求对比
@@ -257,5 +278,64 @@ func TestRunTurn(t *testing.T) {
 				t.Fatalf("调用[Complete]一轮结束后 此时的runtime.messages与期望得到的结构不符, want: %v, got: %v", tt.wantMessages, runtime.messages)
 			}
 		})
+	}
+}
+
+type runtimeFakeTool struct {
+	definition model.ToolDefinition
+}
+
+func (f *runtimeFakeTool) Definition() model.ToolDefinition {
+	return f.definition
+}
+
+func (f *runtimeFakeTool) Execute(
+	ctx context.Context,
+	arguments json.RawMessage,
+) (string, error) {
+	return "test-result", nil
+}
+
+func TestRunTurn2(t *testing.T) {
+	var testTool *runtimeFakeTool = &runtimeFakeTool{
+		definition: model.ToolDefinition{
+			Name:        "test-tool",
+			Description: "test-工具描述",
+			Parameters:  json.RawMessage(`{}`),
+		},
+	}
+
+	testRegistry, err := tool.NewRegistry(testTool)
+	if err != nil {
+		t.Fatalf("创建注册表失败: %v", err)
+	}
+
+	testModel := &fakeModel{
+		Response: model.Response{
+			Message: model.Message{
+				Role:    model.RoleAssistant,
+				Content: "测试响应",
+			},
+			FinishReason: "stop",
+		},
+		err: nil,
+	}
+	runtime, err := NewRuntime(testModel, "test-model", "测试提示词", testRegistry)
+	if err != nil {
+		t.Fatalf("调用[NewRuntime]获取[Runtime]结构体失败, 错误: %v", err)
+	}
+
+	_, err = runtime.RunTurn(context.Background(), "测试输入")
+	if err != nil {
+		t.Fatalf("RunTurn执行失败: %v", err)
+	}
+
+	if len(testModel.LastRequest.Tools) != 1 {
+		t.Fatalf("want 1, got: %d", len(testModel.LastRequest.Tools))
+	}
+
+	name := testModel.LastRequest.Tools[0].Name
+	if name != "test-tool" {
+		t.Fatalf("want: %s, got: %s", "test-tool", name)
 	}
 }
