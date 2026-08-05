@@ -46,6 +46,7 @@ func NewRegistry(tools ...Tool) (*Registry, error) {
 		}
 
 		definition.Name = name
+		definition.Description = description
 		registry.tools[name] = candidate
 		registry.definitions = append(registry.definitions, definition)
 	}

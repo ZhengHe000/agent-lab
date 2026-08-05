@@ -6,15 +6,17 @@ import (
 	"strings"
 
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model"
+	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 )
 
 type Runtime struct {
 	llm       model.Model     // 使用模型的能力
 	modelName string          // 模型名称
 	messages  []model.Message // 上下文历史
+	tools     *tool.Registry  // 持有注册表
 }
 
-func NewRuntime(llm model.Model, modelName string, systemPrompt string) (*Runtime, error) {
+func NewRuntime(llm model.Model, modelName string, systemPrompt string, tools *tool.Registry) (*Runtime, error) {
 	if llm == nil { // 检查模型
 		return nil, fmt.Errorf("model 不能为空")
 	}
@@ -27,6 +29,10 @@ func NewRuntime(llm model.Model, modelName string, systemPrompt string) (*Runtim
 		return nil, fmt.Errorf("系统提示词 不能为空")
 	}
 
+	if tools == nil {
+		return nil, fmt.Errorf("工具注册表不能为空")
+	}
+
 	runtime := &Runtime{ // 组装Runtime并取地址
 		llm:       llm,
 		modelName: strings.TrimSpace(modelName),
@@ -36,6 +42,7 @@ func NewRuntime(llm model.Model, modelName string, systemPrompt string) (*Runtim
 				Content: strings.TrimSpace(systemPrompt),
 			},
 		},
+		tools: tools,
 	}
 
 	return runtime, nil
@@ -57,6 +64,7 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 	modelRequest := model.Request{ // 使用模型名和candidate组成完整上下文且末尾是新输入
 		Model:    r.modelName,
 		Messages: candidate,
+		Tools:    r.tools.Definitions(),
 	}
 	modelResponse, err := r.llm.Complete(ctx, modelRequest) // 调用Complete方法 得到model.Response和err信息
 	if err != nil {

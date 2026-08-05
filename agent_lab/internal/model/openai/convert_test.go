@@ -370,21 +370,21 @@ func TestToCompletionRequest(t *testing.T) {
 			},
 		},
 		{
-			name: "工具参数Schema非法",
+			name:    "工具参数Schema非法",
 			wantErr: true,
 			testModelRequest: model.Request{
 				Model: "test-model",
 				Messages: []model.Message{
 					model.Message{
-						Role: model.RoleUser,
+						Role:    model.RoleUser,
 						Content: "test",
 					},
 				},
 				Tools: []model.ToolDefinition{
 					model.ToolDefinition{
-						Name: "test_read_text_file",
+						Name:        "test_read_text_file",
 						Description: "测试-用户需要查看文件内容时使用",
-						Parameters: json.RawMessage(`{"type":`),
+						Parameters:  json.RawMessage(`{"type":`),
 					},
 				},
 			},
