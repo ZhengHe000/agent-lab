@@ -13,6 +13,7 @@ import (
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/config"
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model/openai"
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
+	"github.com/ZhengHe000/agent-lab/agent_lab/internal/workspace"
 )
 
 func main() {
@@ -40,7 +41,9 @@ func run() error {
 		return fmt.Errorf("客户端配置失败: %w", err)
 	}
 
-	toolsRegistry, err := tool.NewRegistry() // 创建工具注册表
+	toolsRegistry, err := tool.NewRegistry( // 创建工具注册表
+		workspace.NewReadTextFileTool(),
+		workspace.NewListTextFilesTool())
 	if err != nil {
 		return fmt.Errorf("工具注册表创建失败: %w", err)
 	}
