@@ -43,7 +43,9 @@ func run() error {
 
 	toolsRegistry, err := tool.NewRegistry( // 创建工具注册表
 		workspace.NewReadTextFileTool(),
-		workspace.NewListTextFilesTool())
+		workspace.NewListTextFilesTool(),
+	)
+	
 	if err != nil {
 		return fmt.Errorf("工具注册表创建失败: %w", err)
 	}
