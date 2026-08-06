@@ -352,160 +352,236 @@ var fakeTool_1 *fakeTool = &fakeTool{}
 
 const testUserInput1 string = "查询xx文件"
 
-var testModel1 *scriptedModel = &scriptedModel{
-	responses: []model.Response{
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-		model.Response{
-			Message: model.Message{
-				Role:    model.RoleAssistant,
-				Content: "测试-读取结果为:test-result",
-			},
-		},
-	},
-}
-
-var testModel2 *scriptedModel = &scriptedModel{
-	responses: []model.Response{
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-		model.Response{
-			Message: model.Message{
-				Role: model.RoleAssistant,
-				ToolCalls: []model.ToolCall{
-					model.ToolCall{
-						ID:        "tool_abc",
-						Name:      "test_read_file",
-						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
-					},
-				},
-			},
-		},
-	},
-}
-
 func TestRunTurn_ToolLoop(t *testing.T) {
 	tests := []struct {
 		name      string
-		testModel model.Model
+		testModel *scriptedModel
 		testTools []tool.Tool
 		wantErr   error
+		wantGot   string
 	}{
 		{
-			name:      "成功工具循环",
-			testModel: testModel1,
+			name: "成功工具循环",
+			testModel: &scriptedModel{
+				responses: []model.Response{
+					model.Response{
+						Message: model.Message{
+							Role: model.RoleAssistant,
+							ToolCalls: []model.ToolCall{
+								model.ToolCall{
+									ID:   "tool_abc",
+									Name: "test_read_file",
+									Arguments: json.RawMessage(`{
+            "type": "object",
+            "properties": {
+            "filename": {
+                "type": "string",
+                "description": "要读取的文本文件名, 例如note.txt"
+            }
+        },
+        "required": ["filename"],
+        "additionalProperties": false
+    }`),
+								},
+							},
+						},
+					},
+					model.Response{
+						Message: model.Message{
+							Role:    model.RoleAssistant,
+							Content: "test-result",
+						},
+					},
+				},
+			},
 			testTools: []tool.Tool{
 				fakeTool_1,
 			},
 			wantErr: nil,
+			wantGot: "test-result",
 		},
 		{
-			name:      "成功工具循环",
-			testModel: testModel2,
+			name: "超过最大步数",
+			testModel: &scriptedModel{
+				responses: []model.Response{
+					model.Response{
+						Message: model.Message{
+							Role: model.RoleAssistant,
+							ToolCalls: []model.ToolCall{
+								model.ToolCall{
+									ID:   "tool_abc",
+									Name: "test_read_file",
+									Arguments: json.RawMessage(`{
+            "type": "object",
+            "properties": {
+            "filename": {
+                "type": "string",
+                "description": "要读取的文本文件名, 例如note.txt"
+            }
+        },
+        "required": ["filename"],
+        "additionalProperties": false
+    }`),
+								},
+							},
+						},
+					},
+					model.Response{
+						Message: model.Message{
+							Role: model.RoleAssistant,
+							ToolCalls: []model.ToolCall{
+								model.ToolCall{
+									ID:   "tool_abc",
+									Name: "test_read_file",
+									Arguments: json.RawMessage(`{
+            "type": "object",
+            "properties": {
+            "filename": {
+                "type": "string",
+                "description": "要读取的文本文件名, 例如note.txt"
+            }
+        },
+        "required": ["filename"],
+        "additionalProperties": false
+    }`),
+								},
+							},
+						},
+					},
+					model.Response{
+						Message: model.Message{
+							Role: model.RoleAssistant,
+							ToolCalls: []model.ToolCall{
+								model.ToolCall{
+									ID:   "tool_abc",
+									Name: "test_read_file",
+									Arguments: json.RawMessage(`{
+            "type": "object",
+            "properties": {
+            "filename": {
+                "type": "string",
+                "description": "要读取的文本文件名, 例如note.txt"
+            }
+        },
+        "required": ["filename"],
+        "additionalProperties": false
+    }`),
+								},
+							},
+						},
+					},
+					model.Response{
+						Message: model.Message{
+							Role: model.RoleAssistant,
+							ToolCalls: []model.ToolCall{
+								model.ToolCall{
+									ID:   "tool_abc",
+									Name: "test_read_file",
+									Arguments: json.RawMessage(`{
+            "type": "object",
+            "properties": {
+            "filename": {
+                "type": "string",
+                "description": "要读取的文本文件名, 例如note.txt"
+            }
+        },
+        "required": ["filename"],
+        "additionalProperties": false
+    }`),
+								},
+							},
+						},
+					},
+					model.Response{
+						Message: model.Message{
+							Role: model.RoleAssistant,
+							ToolCalls: []model.ToolCall{
+								model.ToolCall{
+									ID:   "tool_abc",
+									Name: "test_read_file",
+									Arguments: json.RawMessage(`{
+            "type": "object",
+            "properties": {
+            "filename": {
+                "type": "string",
+                "description": "要读取的文本文件名, 例如note.txt"
+            }
+        },
+        "required": ["filename"],
+        "additionalProperties": false
+    }`),
+								},
+							},
+						},
+					},
+					model.Response{
+						Message: model.Message{
+							Role: model.RoleAssistant,
+							ToolCalls: []model.ToolCall{
+								model.ToolCall{
+									ID:   "tool_abc",
+									Name: "test_read_file",
+									Arguments: json.RawMessage(`{
+            "type": "object",
+            "properties": {
+            "filename": {
+                "type": "string",
+                "description": "要读取的文本文件名, 例如note.txt"
+            }
+        },
+        "required": ["filename"],
+        "additionalProperties": false
+    }`),
+								},
+							},
+						},
+					},
+					model.Response{
+						Message: model.Message{
+							Role: model.RoleAssistant,
+							ToolCalls: []model.ToolCall{
+								model.ToolCall{
+									ID:   "tool_abc",
+									Name: "test_read_file",
+									Arguments: json.RawMessage(`{
+            "type": "object",
+            "properties": {
+            "filename": {
+                "type": "string",
+                "description": "要读取的文本文件名, 例如note.txt"
+            }
+        },
+        "required": ["filename"],
+        "additionalProperties": false
+    }`),
+								},
+							},
+						},
+					},
+					model.Response{
+						Message: model.Message{
+							Role: model.RoleAssistant,
+							ToolCalls: []model.ToolCall{
+								model.ToolCall{
+									ID:   "tool_abc",
+									Name: "test_read_file",
+									Arguments: json.RawMessage(`{
+            "type": "object",
+            "properties": {
+            "filename": {
+                "type": "string",
+                "description": "要读取的文本文件名, 例如note.txt"
+            }
+        },
+        "required": ["filename"],
+        "additionalProperties": false
+    }`),
+								},
+							},
+						},
+					},
+				},
+			},
 			testTools: []tool.Tool{
 				fakeTool_1,
 			},
@@ -530,6 +606,11 @@ func TestRunTurn_ToolLoop(t *testing.T) {
 				if !errors.Is(err, tt.wantErr) {
 					t.Fatalf("实际错误 %v 中不包含期望错误: %v", err, tt.wantErr)
 				}
+
+				if len(testRuntime.messages) > 2 {
+					t.Fatalf("历史被污染，消息数: %d", len(testRuntime.messages))
+				}
+
 				return
 			}
 
@@ -537,21 +618,26 @@ func TestRunTurn_ToolLoop(t *testing.T) {
 				t.Fatalf("RunTurn出现非预期错误: %v", err)
 			}
 
-			if got != "测试-读取结果为:test-result" {
+			if got != tt.wantGot {
 				t.Fatalf("模型最终输出与预设不同, 实际:%v", got)
 			}
 
-			if testModel1.requests[1].Messages[2].Role != model.RoleAssistant {
-				t.Fatalf("want: %s, got %s", model.RoleAssistant, testModel1.requests[1].Messages[2].Role)
+			if tt.testModel.requests[1].Messages[2].Role != model.RoleAssistant {
+				t.Fatalf("want: %s, got %s", model.RoleAssistant, tt.testModel.requests[1].Messages[2].Role)
 			}
 
-			if len(testModel1.requests[1].Messages[2].ToolCalls) != 1 {
-				t.Fatalf("want: %d, got %d", 1, len(testModel1.requests[1].Messages[2].ToolCalls))
+			if len(tt.testModel.requests[1].Messages[2].ToolCalls) != 1 {
+				t.Fatalf("want: %d, got %d", 1, len(tt.testModel.requests[1].Messages[2].ToolCalls))
 			}
 
-			if testModel1.requests[1].Messages[3].Role != model.RoleTool {
-				t.Fatalf("want: %s, got %s", model.RoleTool, testModel1.requests[1].Messages[3].Role)
+			if tt.testModel.requests[1].Messages[3].Role != model.RoleTool {
+				t.Fatalf("want: %s, got %s", model.RoleTool, tt.testModel.requests[1].Messages[3].Role)
 			}
+
+			if len(testRuntime.messages) != 5 {
+				t.Fatalf("最终上下文长度错误, want: 5, got: %d", len(testRuntime.messages))
+			}
+
 		})
 	}
 }
