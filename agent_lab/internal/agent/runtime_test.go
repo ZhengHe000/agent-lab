@@ -527,8 +527,8 @@ func TestRunTurn_ToolLoop(t *testing.T) {
 					t.Fatalf("实际错误 %v 中不包含期望错误: %v", err, tt.wantErr)
 				}
 
-				if len(testRuntime.messages) > 2 {
-					t.Fatalf("历史被污染，消息数: %d", len(testRuntime.messages))
+				if len(testRuntime.messages) != 1 {
+					t.Fatalf("工具循环失败后正式历史应保持不变, want: 1, got: %d", len(testRuntime.messages))
 				}
 
 				return
