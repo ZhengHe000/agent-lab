@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -47,7 +48,6 @@ func TestRunTurn(t *testing.T) {
 		testSystemPrompt string
 		testInput        string
 		testTools        []model.ToolDefinition
-		wantLen          int64
 		wantErr          error
 		wantMessages     []model.Message
 		wantStr          string
@@ -127,37 +127,6 @@ func TestRunTurn(t *testing.T) {
 			testInput:        testUserInput,
 			testTools:        []model.ToolDefinition{},
 			wantErr:          ErrResponseRoleError,
-			wantMessages: []model.Message{
-				model.Message{
-					Role:    model.RoleSystem,
-					Content: testModelSystemPrompt,
-				},
-			},
-			wantStr: "",
-		},
-		{
-			name: "响应包含暂不支持的 ToolCalls",
-			testFakeModel: &fakeModel{
-				Response: model.Response{
-					Message: model.Message{
-						Role:    model.RoleAssistant,
-						Content: testAssistantContent,
-						ToolCalls: []model.ToolCall{
-							model.ToolCall{
-								ID:   "错误测试使用",
-								Name: "错误测试使用",
-							},
-						},
-					},
-					FinishReason: "stop",
-				},
-				err: nil,
-			},
-			testModelName:    "test-model",
-			testSystemPrompt: testModelSystemPrompt,
-			testInput:        testUserInput,
-			testTools:        []model.ToolDefinition{},
-			wantErr:          ErrToolCallsUnsupported,
 			wantMessages: []model.Message{
 				model.Message{
 					Role:    model.RoleSystem,
@@ -296,7 +265,7 @@ func (f *runtimeFakeTool) Execute(
 	return "test-result", nil
 }
 
-func TestRunTurn2(t *testing.T) {
+func TestRunTurnIncludesToolDefinitions(t *testing.T) {
 	var testTool *runtimeFakeTool = &runtimeFakeTool{
 		definition: model.ToolDefinition{
 			Name:        "test-tool",
@@ -337,5 +306,252 @@ func TestRunTurn2(t *testing.T) {
 	name := testModel.LastRequest.Tools[0].Name
 	if name != "test-tool" {
 		t.Fatalf("want: %s, got: %s", "test-tool", name)
+	}
+}
+
+type scriptedModel struct {
+	requests  []model.Request
+	responses []model.Response
+	index     int
+}
+
+func (m *scriptedModel) Complete(ctx context.Context, request model.Request) (model.Response, error) {
+	m.requests = append(m.requests, request)
+
+	if m.index >= len(m.responses) {
+		return model.Response{}, fmt.Errorf("没有更多测试响应")
+	}
+	response := m.responses[m.index]
+	m.index++
+
+	return response, nil
+}
+
+type fakeTool struct{}
+
+func (f *fakeTool) Definition() model.ToolDefinition {
+	return model.ToolDefinition{
+		Name:        "test_read_file",
+		Description: "tset-工具描述",
+		Parameters:  json.RawMessage(`{"filename":"test_note.txt"}`),
+	}
+}
+
+func (f *fakeTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {
+	if !json.Valid(arguments) {
+		return "", fmt.Errorf("测试工具 Schema 参数的JSON不合法")
+	}
+	if !bytes.Equal(arguments, json.RawMessage(`{"filename":"test_note.txt"}`)) {
+		return "", fmt.Errorf("测试工具参数与期望不符,want: %s got: %s", string(json.RawMessage(`{"filename":"test_note.txt"}`)), string(arguments))
+	}
+
+	return "test-result", nil
+}
+
+var fakeTool_1 *fakeTool = &fakeTool{}
+
+const testUserInput1 string = "查询xx文件"
+
+var testModel1 *scriptedModel = &scriptedModel{
+	responses: []model.Response{
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+		model.Response{
+			Message: model.Message{
+				Role:    model.RoleAssistant,
+				Content: "测试-读取结果为:test-result",
+			},
+		},
+	},
+}
+
+var testModel2 *scriptedModel = &scriptedModel{
+	responses: []model.Response{
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+		model.Response{
+			Message: model.Message{
+				Role: model.RoleAssistant,
+				ToolCalls: []model.ToolCall{
+					model.ToolCall{
+						ID:        "tool_abc",
+						Name:      "test_read_file",
+						Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
+					},
+				},
+			},
+		},
+	},
+}
+
+func TestRunTurn_ToolLoop(t *testing.T) {
+	tests := []struct {
+		name      string
+		testModel model.Model
+		testTools []tool.Tool
+		wantErr   error
+	}{
+		{
+			name:      "成功工具循环",
+			testModel: testModel1,
+			testTools: []tool.Tool{
+				fakeTool_1,
+			},
+			wantErr: nil,
+		},
+		{
+			name:      "成功工具循环",
+			testModel: testModel2,
+			testTools: []tool.Tool{
+				fakeTool_1,
+			},
+			wantErr: ErrMaxStepsExceeded,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testRegistry, err := tool.NewRegistry(tt.testTools...)
+			if err != nil {
+				t.Fatalf("工具注册表创建失败: %v", err)
+			}
+
+			testRuntime, err := NewRuntime(tt.testModel, "test-model", "测试-提示词", testRegistry)
+			if err != nil {
+				t.Fatalf("创建Runtime失败: %v", err)
+			}
+
+			got, err := testRuntime.RunTurn(context.Background(), testUserInput1)
+			if tt.wantErr != nil {
+				if !errors.Is(err, tt.wantErr) {
+					t.Fatalf("实际错误 %v 中不包含期望错误: %v", err, tt.wantErr)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("RunTurn出现非预期错误: %v", err)
+			}
+
+			if got != "测试-读取结果为:test-result" {
+				t.Fatalf("模型最终输出与预设不同, 实际:%v", got)
+			}
+
+			if testModel1.requests[1].Messages[2].Role != model.RoleAssistant {
+				t.Fatalf("want: %s, got %s", model.RoleAssistant, testModel1.requests[1].Messages[2].Role)
+			}
+
+			if len(testModel1.requests[1].Messages[2].ToolCalls) != 1 {
+				t.Fatalf("want: %d, got %d", 1, len(testModel1.requests[1].Messages[2].ToolCalls))
+			}
+
+			if testModel1.requests[1].Messages[3].Role != model.RoleTool {
+				t.Fatalf("want: %s, got %s", model.RoleTool, testModel1.requests[1].Messages[3].Role)
+			}
+		})
 	}
 }
