@@ -332,7 +332,7 @@ type fakeTool struct{}
 func (f *fakeTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name:        "test_read_file",
-		Description: "tset-工具描述",
+		Description: "test-工具描述",
 		Parameters:  json.RawMessage(`{"filename":"test_note.txt"}`),
 	}
 }
@@ -348,7 +348,7 @@ func (f *fakeTool) Execute(ctx context.Context, arguments json.RawMessage) (stri
 	return "test-result", nil
 }
 
-var fakeTool_1 *fakeTool = &fakeTool{}
+var testFileTool = &fakeTool{}
 
 const testUserInput1 string = "查询xx文件"
 
@@ -395,7 +395,7 @@ func TestRunTurn_ToolLoop(t *testing.T) {
 				},
 			},
 			testTools: []tool.Tool{
-				fakeTool_1,
+				testFileTool,
 			},
 			wantErr: nil,
 			wantGot: "test-result",
@@ -503,7 +503,7 @@ func TestRunTurn_ToolLoop(t *testing.T) {
 				},
 			},
 			testTools: []tool.Tool{
-				fakeTool_1,
+				testFileTool,
 			},
 			wantErr: ErrMaxStepsExceeded,
 		},
@@ -558,6 +558,9 @@ func TestRunTurn_ToolLoop(t *testing.T) {
 				t.Fatalf("最终上下文长度错误, want: 5, got: %d", len(testRuntime.messages))
 			}
 
+			if got := tt.testModel.requests[1].Messages[3].ToolCallID; got != "tool_abc" {
+				t.Fatalf("ToolCallID错误, want: %q, got: %q", "tool_abc", got)
+			}
 		})
 	}
 }
