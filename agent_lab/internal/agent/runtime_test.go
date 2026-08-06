@@ -369,19 +369,9 @@ func TestRunTurn_ToolLoop(t *testing.T) {
 							Role: model.RoleAssistant,
 							ToolCalls: []model.ToolCall{
 								model.ToolCall{
-									ID:   "tool_abc",
-									Name: "test_read_file",
-									Arguments: json.RawMessage(`{
-            "type": "object",
-            "properties": {
-            "filename": {
-                "type": "string",
-                "description": "要读取的文本文件名, 例如note.txt"
-            }
-        },
-        "required": ["filename"],
-        "additionalProperties": false
-    }`),
+									ID:        "tool_abc",
+									Name:      "test_read_file",
+									Arguments: json.RawMessage(`{"filename":"test_note.txt"}`),
 								},
 							},
 						},
