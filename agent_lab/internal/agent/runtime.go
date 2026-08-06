@@ -9,6 +9,8 @@ import (
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 )
 
+const maxModelSteps = 8
+
 type Runtime struct {
 	llm       model.Model     // 使用模型的能力
 	modelName string          // 模型名称
@@ -54,37 +56,72 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 		return "", fmt.Errorf("input 不能为空")
 	}
 
-	candidate := make([]model.Message, 0, len(r.messages)+1) // 创建容器 存放model.Message
-	candidate = append(candidate, r.messages...)             // 将messages的所有model.Message依次取出append追加进容器中
-	candidate = append(candidate, model.Message{             // 将输入的问题[input]进行拼接, 以model.Message类型 追加进容器末尾
-		Role:    model.RoleUser, // 身份为 用户
-		Content: input,          // 输入的信息文本
+	workingMessages := make([]model.Message, 0, len(r.messages)+1) // 创建容器
+	workingMessages = append(workingMessages, r.messages...)       // 将正式历史当作上下文
+	workingMessages = append(workingMessages, model.Message{       // 将本轮输入追加至末尾
+		Role:    model.RoleUser,
+		Content: input,
 	})
 
-	modelRequest := model.Request{ // 使用模型名和candidate组成完整上下文且末尾是新输入
-		Model:    r.modelName,
-		Messages: candidate,
-		Tools:    r.tools.Definitions(),
+	for stop := 0; stop < maxModelSteps; stop++ { // 进入轮次受控循环
+		response, err := r.llm.Complete(context.Background(), model.Request{ // 调用模型回复
+			Model:    r.modelName,
+			Messages: workingMessages,
+			Tools:    r.tools.Definitions(),
+		})
+		if err != nil {
+			return "", fmt.Errorf("%w: %w", ErrModelInvocationFailed, err)
+		}
+
+		message := response.Message
+		if message.Role != model.RoleAssistant { // 检查响应角色, 必须是 model.RoleAssistant
+			return "", fmt.Errorf("%w: want %q, got: %q", ErrResponseRoleError, model.RoleAssistant, message.Role)
+		}
+
+		if len(message.ToolCalls) == 0 {
+			if strings.TrimSpace(message.Content) == "" {
+				return "", ErrEmptyContent
+			}
+
+			workingMessages = append(workingMessages, message)
+			r.messages = workingMessages
+			return message.Content, nil
+		}
+
+		workingMessages = append(workingMessages, message)
+
+		for _, call := range message.ToolCalls {
+			if strings.TrimSpace(call.Name) == "" {
+				return "", fmt.Errorf("%w: 工具名为空", ErrInvalidToolCall)
+			}
+
+			if strings.TrimSpace(call.ID) == "" {
+				return "", fmt.Errorf("%w: 工具调用ID为空", ErrInvalidToolCall)
+			}
+
+			result := r.executeToolCall(ctx, call)
+
+			workingMessages = append(workingMessages, model.Message{
+				Role:       model.RoleTool,
+				Content:    result,
+				ToolCallID: call.ID,
+			})
+		}
 	}
-	modelResponse, err := r.llm.Complete(ctx, modelRequest) // 调用Complete方法 得到model.Response和err信息
+
+	return "", ErrMaxStepsExceeded
+}
+
+func (r *Runtime) executeToolCall(ctx context.Context, call model.ToolCall) string {
+	registeredTool, exists := r.tools.Get(call.Name)
+	if !exists {
+		return fmt.Sprintf("工具执行失败, 未注册工具: %q", call.Name)
+	}
+
+	result, err := registeredTool.Execute(ctx, call.Arguments)
 	if err != nil {
-		return "", fmt.Errorf("%w:%w", ErrModelInvocationFailed, err)
+		return fmt.Sprintf("工具 %q 执行失败: %v", call.Name, err)
 	}
 
-	msg := modelResponse.Message // 将modelResponse.Message简化为msg
-
-	if msg.Role != model.RoleAssistant { // 检查回复身份是否是model.RoleAssistant[模型]
-		return "", fmt.Errorf("%w want: %s, got: %s", ErrResponseRoleError, model.RoleAssistant, msg.Role)
-	}
-
-	if len(msg.ToolCalls) != 0 { // 当存在工具调用时直接返回 [暂时使用!]
-		return "", ErrToolCallsUnsupported
-	}
-
-	if strings.TrimSpace(msg.Content) == "" {
-		return "", ErrEmptyContent
-	}
-
-	r.messages = append(candidate, msg) // 将响应model.Message追加进r.messages
-	return msg.Content, nil             // 返回响应的Content文本部分和nil
+	return result
 }
