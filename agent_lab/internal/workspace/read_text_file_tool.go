@@ -13,19 +13,19 @@ type ReadTextFileTool struct {
 	dir string
 }
 
-func NewReadTextFileTool() *ReadTextFileTool { // 固定使用受控工作区
+func NewReadTextFileTool() *ReadTextFileTool {
 	return &ReadTextFileTool{
 		dir: workspaceDir,
 	}
 }
 
-func newReadTextFileToolInDir(dir string) *ReadTextFileTool { // 用于在workspace的测试中注入临时测试目录 不对外开放
+func newReadTextFileToolInDir(dir string) *ReadTextFileTool { // 方便在workspace的测试中注入临时测试目录
 	return &ReadTextFileTool{
 		dir: dir,
 	}
 }
 
-type readTextFileArguments struct { // 工具内部协议
+type readTextFileArguments struct { // read_text_file工具使用内部结构体解析模型参数
 	Filename string `json:"filename"`
 }
 

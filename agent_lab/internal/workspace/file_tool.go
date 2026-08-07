@@ -61,7 +61,7 @@ func validateContent(content string) error { // validateContent 对Content内容
 	return nil
 }
 
-var filenameRule = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}\.txt$`) // filenameRule 编译可复用的规则
+var filenameRule = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]{0,95}\.txt$`) // 先强制英文开头txt结尾, 限制工具使用范围
 
 func validateFilename(filename string) error { // validateFilename 文件名校验
 
