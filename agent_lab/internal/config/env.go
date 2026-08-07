@@ -7,26 +7,26 @@ import (
 	"strings"
 )
 
-func LoadEnvFile(fileName string) error { // 配置环境变量
-	file, err := os.Open(fileName) //打开env环境配置文件
+func LoadEnvFile(fileName string) error {
+	file, err := os.Open(fileName)
 	if err != nil {
 		return fmt.Errorf("打开环境配置文件 %q 失败: %w", fileName, err)
 	}
-	defer file.Close() // 结束前关闭文件
+	defer file.Close()
 
-	scanner := bufio.NewScanner(file) // 创建扫描器
-	lineNumber := 0                   // 用来计算当前第几行
+	scanner := bufio.NewScanner(file)
+	lineNumber := 0
 
-	for scanner.Scan() { // 逐行扫描
+	for scanner.Scan() {
 		lineNumber++
 
-		line := strings.TrimSpace(scanner.Text()) // 拿到一行内容
+		line := strings.TrimSpace(scanner.Text())
 
-		if line == "" || strings.HasPrefix(line, "#") { // 跳过空行和注释
+		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
 
-		parts := strings.SplitN(line, "=", 2) // 以=分开
+		parts := strings.SplitN(line, "=", 2)
 		if len(parts) != 2 {
 			return fmt.Errorf("第 %d 行不是合法的 KEY=VALUE 格式", lineNumber)
 		}
@@ -34,15 +34,15 @@ func LoadEnvFile(fileName string) error { // 配置环境变量
 		key := strings.TrimSpace(parts[0])
 		value := strings.TrimSpace(parts[1])
 
-		if key == "" { // 检查配置名称
+		if key == "" {
 			return fmt.Errorf("第 %d 行的环境变量名称为空", lineNumber)
 		}
 
-		if _, exists := os.LookupEnv(key); exists { // 查看配置是否存在
+		if _, exists := os.LookupEnv(key); exists {
 			continue
 		}
 
-		if err := os.Setenv(key, value); err != nil { // 进行环境配置
+		if err := os.Setenv(key, value); err != nil {
 			return fmt.Errorf("[环境配置] 第 %d 行失败:%w", lineNumber, err)
 		}
 
