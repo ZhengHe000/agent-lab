@@ -333,7 +333,7 @@ func (f *fakeTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name:        "test_read_file",
 		Description: "test-工具描述",
-		Parameters:  json.RawMessage(`{
+		Parameters: json.RawMessage(`{
 	"type": "object",
 	"properties": {
 		"filename": {"type": "string"}
