@@ -9,17 +9,17 @@ import (
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 )
 
-type ListTextFilesTool struct { // 列出受控工作区全部文件的Tool
+type ListTextFilesTool struct {
 	dir string
 }
 
-func NewListTextFilesTool() *ListTextFilesTool { // 受控工作区
+func NewListTextFilesTool() *ListTextFilesTool {
 	return &ListTextFilesTool{
 		dir: workspaceDir,
 	}
 }
 
-func newListTextFilesToolInDir(dir string) *ListTextFilesTool { // 测试使用可注入目录
+func newListTextFilesToolInDir(dir string) *ListTextFilesTool { // 测试时注入t.Dir隔离环境
 	return &ListTextFilesTool{
 		dir: dir,
 	}
