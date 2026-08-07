@@ -14,17 +14,17 @@ type Registry struct {
 }
 
 func NewRegistry(tools ...Tool) (*Registry, error) {
-	registry := &Registry{ // 创建容器并为字段追加分配空间
+	registry := &Registry{
 		tools:       make(map[string]Tool, len(tools)),
 		definitions: make([]model.ToolDefinition, 0, len(tools)),
 	}
 
-	for _, candidate := range tools { // 遍历工具切片, 得到 *xxx_tool
+	for _, candidate := range tools {
 		if candidate == nil {
 			return nil, fmt.Errorf("工具不能为空")
 		}
 
-		definition := candidate.Definition() // 调用工具的Definition方法拿到 model.ToolDefinition
+		definition := candidate.Definition()
 
 		name := strings.TrimSpace(definition.Name)
 

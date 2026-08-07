@@ -23,25 +23,25 @@ func main() {
 }
 
 func run() error {
-	if err := config.LoadEnvFile("agent_lab/.env.local"); err != nil { //加载环境变量
+	if err := config.LoadEnvFile("agent_lab/.env.local"); err != nil {
 		return fmt.Errorf("加载环境文件失败: %w", err)
 	}
 
-	cfg, err := config.LoadConfig() // 提取环境变量
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		return fmt.Errorf("加载程序配置失败: %w", err)
 	}
 
-	httpClient := &http.Client{ // 设置客户端
+	httpClient := &http.Client{
 		Timeout: cfg.Model.Timeout,
 	}
 
-	client, err := openai.NewClient(httpClient, cfg.Model.Endpoint, cfg.Model.APIKey) // 组装客户端
+	client, err := openai.NewClient(httpClient, cfg.Model.Endpoint, cfg.Model.APIKey)
 	if err != nil {
 		return fmt.Errorf("客户端配置失败: %w", err)
 	}
 
-	toolsRegistry, err := tool.NewRegistry( // 创建工具注册表
+	toolsRegistry, err := tool.NewRegistry( // 工具注册表
 		workspace.NewReadTextFileTool(),
 		workspace.NewListTextFilesTool(),
 	)
@@ -50,7 +50,7 @@ func run() error {
 		return fmt.Errorf("工具注册表创建失败: %w", err)
 	}
 
-	runtime, err := agent.NewRuntime(client, cfg.Model.Name, cfg.Agent.SystemPrompt, toolsRegistry) // 组装单轮运行器
+	runtime, err := agent.NewRuntime(client, cfg.Model.Name, cfg.Agent.SystemPrompt, toolsRegistry)
 	if err != nil {
 		return fmt.Errorf("创建Agent运行器失败: %w", err)
 	}
