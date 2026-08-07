@@ -45,7 +45,7 @@ func run() error {
 		workspace.NewReadTextFileTool(),
 		workspace.NewListTextFilesTool(),
 	)
-	
+
 	if err != nil {
 		return fmt.Errorf("工具注册表创建失败: %w", err)
 	}
