@@ -24,6 +24,11 @@ func main() {
 }
 
 func run() error {
+	console, err := terminal.NewConsole(os.Stdin, os.Stdout)
+	if err != nil {
+		return fmt.Errorf("终端交互对象 创建失败: %w", err)
+	}
+
 	if err := config.LoadEnvFile("agent_lab/.env.local"); err != nil {
 		return fmt.Errorf("加载环境文件失败: %w", err)
 	}
@@ -54,11 +59,6 @@ func run() error {
 	runtime, err := agent.NewRuntime(client, cfg.Model.Name, cfg.Agent.SystemPrompt, toolsRegistry)
 	if err != nil {
 		return fmt.Errorf("创建Agent运行器失败: %w", err)
-	}
-
-	console, err := terminal.NewConsole(os.Stdin, os.Stdout)
-	if err != nil {
-		return fmt.Errorf("终端交互对象 创建失败: %w", err)
 	}
 
 	fmt.Println("Agent Lab 已启动, 输入 exit 退出")

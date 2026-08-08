@@ -64,16 +64,16 @@ func createTestDirOrFile(t *testing.T, dir string, testFileNames []string, testD
 func TestListTextFilesInDirFiltersAndSorts(t *testing.T) {
 	testDir := t.TempDir()
 
-	testFileName := []string{ // 混合创建顺序
-		".n-1.txt", //名字非法的 .txt 文件
-		"y-2.txt",  // 合法 .txt 文件
-		"n-1.md",   // .md 文件
-		"y-3.txt",  // 合法 .txt 文件
-		"y-1.txt",  // 合法 .txt 文件
+	testFileName := []string{
+		".n-1.txt",
+		"y-2.txt",
+		"n-1.md",
+		"y-3.txt",
+		"y-1.txt",
 	}
 
 	testDirName := []string{
-		"folder.txt", // 名为 folder.txt 的目录
+		"folder.txt",
 	}
 
 	createTestDirOrFile(t, testDir, testFileName, testDirName)
@@ -83,7 +83,7 @@ func TestListTextFilesInDirFiltersAndSorts(t *testing.T) {
 		t.Fatalf("获取文件列表失败: %v", err)
 	}
 
-	want := []string{ // 期望entries这个切片中出现的内容
+	want := []string{
 		"y-1.txt",
 		"y-2.txt",
 		"y-3.txt",
