@@ -11,11 +11,11 @@ var (
 	// 用于表示内容格式与预设的正则表达式规则不匹配时返回的错误
 	ErrInvalidFilename = errors.New("内容格式与正则规则不符")
 
-	// 当 `os.MkdirAll` 因参数错误而失败时，应返回此错误. 若需保留底层原始错误，建议在调用处使用 `fmt.Errorf("%w: %w", ErrMkdirAll, err)` 进行包装。
-	ErrMkdirAll = errors.New("调用 os.MkdirAll 失败")
+	// os.MkdirAll 失败时返回此错误
+	ErrMkdirAll = errors.New("创建目录失败")
 
-	// 当 `os.WriteFile` 因参数错误而失败时，应返回此错误. 若需保留底层原始错误，建议在调用处使用 `fmt.Errorf("%w: %w", ErrWriteFile, err)` 进行包装。
-	ErrWriteFile = errors.New("调用 os.WriteFile 失败")
+	// os.WriteFile 失败时返回此错误
+	ErrWriteFile = errors.New("文件写入失败")
 
 	// 当用户或逻辑选择拒绝继续写入操作时，返回此错误
 	ErrWriteCancelled = errors.New("写入操作已取消")
