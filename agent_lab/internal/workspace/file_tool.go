@@ -97,12 +97,12 @@ func writeTextFileInDir(dir string, filename string, content string) (string, er
 
 	info, err := os.Lstat(filePath)
 	if err == nil {
-		if info.Mode&os.ModeSymlink() != 0 {
+		if info.Mode()&os.ModeSymlink != 0 {
 			return "", fmt.Errorf("%w: 拒绝写入链接文件", ErrWriteFile)
 		}
 
 		if !info.Mode().IsRegular() {
-			return "", fmt.Errorf("%w: 只能覆盖普通文件")
+			return "", fmt.Errorf("%w: 只能覆盖普通文件", ErrWriteFile)
 		}
 	} else if !os.IsNotExist(err) {
 		return "", fmt.Errorf("%w: 获取目标文件信息失败: %w", ErrWriteFile, err)
