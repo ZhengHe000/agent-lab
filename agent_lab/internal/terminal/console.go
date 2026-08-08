@@ -36,7 +36,7 @@ func NewConsole(reader io.Reader, writer io.Writer) (*Console, error) {
 // ReadLine 输出提示并读取一行文本
 func (c *Console) ReadLine(prompt string) (string, error) {
 	if _, err := fmt.Fprint(c.writer, prompt); err != nil {
-		return "", fmt.Errorf("输出终端提示失败")
+		return "", fmt.Errorf("输出终端提示失败: %w", err)
 	}
 
 	line, err := c.reader.ReadString('\n')
@@ -53,11 +53,10 @@ func (c *Console) ReadLine(prompt string) (string, error) {
 	return line, nil
 }
 
-// 展示副作用操作并等待用户明确授权
-
+// Confirm 展示副作用操作并等待用户明确授权
 func (c *Console) Confirm(ctx context.Context, request tool.ConfirmationRequest) (bool, error) {
 	if err := ctx.Err(); err != nil {
-		return false, fmt.Errorf("确认操作前上下文已结束")
+		return false, fmt.Errorf("确认操作前上下文已结束: %w", err)
 	}
 
 	if strings.TrimSpace(request.Action) == "" {
