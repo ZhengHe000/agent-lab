@@ -80,7 +80,7 @@ func TestConfirm(t *testing.T) {
 					t.Fatalf("期望存在重试提醒, 但未找到")
 				}
 
-				return 
+				return
 			}
 
 			if strings.Contains(got, "输入无效, 请输入 y 或 n: ") {
