@@ -2,9 +2,12 @@ package terminal
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 )
 
 // Console 统一管理命令行程序的文本输入和输出
@@ -15,7 +18,7 @@ type Console struct {
 }
 
 // NewConsole 创建终端交互对象
-func NewConsole(reader *bufio.Reader, writer io.Writer) (*Console, error) {
+func NewConsole(reader io.Reader, writer io.Writer) (*Console, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("终端输入不能为空")
 	}
@@ -25,7 +28,7 @@ func NewConsole(reader *bufio.Reader, writer io.Writer) (*Console, error) {
 	}
 
 	return &Console{
-		reader: reader,
+		reader: bufio.NewReader(reader),
 		writer: writer,
 	}, nil
 }
@@ -36,12 +39,12 @@ func (c *Console) ReadLine(prompt string) (string, error) {
 		return "", fmt.Errorf("输出终端提示失败")
 	}
 
-	line, err := c.reader.Readerstring("\n")
+	line, err := c.reader.ReadString('\n')
 	if err != nil && err != io.EOF {
 		return "", fmt.Errorf("读取终端输入失败: %w", err)
 	}
 
-	line := strings.TrimSpace(line)
+	line = strings.TrimSpace(line)
 
 	if err == io.EOF && line == "" {
 		return "", io.EOF
@@ -49,3 +52,44 @@ func (c *Console) ReadLine(prompt string) (string, error) {
 
 	return line, nil
 }
+
+// 展示副作用操作并等待用户明确授权
+
+func (c *Console) Confirm(ctx context.Context, request tool.ConfirmationRequest) (bool, error) {
+	if err := ctx.Err(); err != nil {
+		return false, fmt.Errorf("确认操作前上下文已结束")
+	}
+
+	if strings.TrimSpace(request.Action) == "" {
+		return false, fmt.Errorf("确认操作表示不能为空")
+	}
+
+	if strings.TrimSpace(request.Summary) == "" {
+		return false, fmt.Errorf("确认操作摘要不能为空")
+	}
+
+	prompt := fmt.Sprintf(
+		"\n需要确认操作\n\n操作: %s\n\n摘要: %s\n\n详情: \n%s\n\n确认执行?请输入 y 或 n: ",
+		request.Action,
+		request.Summary,
+		request.Details,
+	)
+
+	for {
+		decision, err := c.ReadLine(prompt)
+		if err != nil {
+			return false, fmt.Errorf("读取确认结果失败: %w", err)
+		}
+
+		switch strings.ToLower(decision) {
+		case "y":
+			return true, nil
+		case "n":
+			return false, nil
+		default:
+			prompt = "输入无效, 请输入 y 或 n: "
+		}
+	}
+}
+
+var _ tool.Confirmer = (*Console)(nil)

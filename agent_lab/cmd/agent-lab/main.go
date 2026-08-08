@@ -1,17 +1,18 @@
 package main
 
 import (
-	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/agent"
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/config"
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model/openai"
+	"github.com/ZhengHe000/agent-lab/agent_lab/internal/terminal"
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/workspace"
 )
@@ -55,21 +56,23 @@ func run() error {
 		return fmt.Errorf("创建Agent运行器失败: %w", err)
 	}
 
-	scanner := bufio.NewScanner(os.Stdin)
+	console, err := terminal.NewConsole(os.Stdin, os.Stdout)
+	if err != nil {
+		return fmt.Errorf("终端交互对象 创建失败: %w", err)
+	}
 
 	fmt.Println("Agent Lab 已启动, 输入 exit 退出")
 	for {
-		fmt.Print("狰和: ")
 
-		if !scanner.Scan() {
-			if err := scanner.Err(); err != nil {
-				return fmt.Errorf("读取终端失败: %w", err)
+		input, err := console.ReadLine("狰和: ")
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil
 			}
 
-			return nil
+			return fmt.Errorf("读取终端失败: %w", err)
 		}
 
-		input := strings.TrimSpace(scanner.Text())
 		if input == "" {
 			continue
 		}
