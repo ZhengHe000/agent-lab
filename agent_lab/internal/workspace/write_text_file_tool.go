@@ -44,7 +44,7 @@ type WriteTextFileArguments struct {
 
 var writeTextFileparameters = json.RawMessage(`{
 "type": "object",
-"parameters": {
+"properties": {
 "filename":{
 "type": "string",
 "description": "要创建或覆盖的文本文件名, 例如 note.txt"
