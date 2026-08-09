@@ -118,7 +118,7 @@ func TestWriteTextFileInDirRejectsSymlink(t *testing.T) {
 	}
 
 	gotPath, err := writeTextFileInDir(workspaceDir, "note.txt", "changed")
-	if errors.Is(err, ErrWriteFile) {
+	if !errors.Is(err, ErrWriteFile) {
 		t.Fatalf("期望错误包含 %v, 但实际: %v", ErrWriteFile, err)
 	}
 
