@@ -1,6 +1,7 @@
 package workspace
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -99,5 +100,38 @@ func TestWriteTextFileInDirRejectsInvalidInput(t *testing.T) {
 				t.Errorf("非法输入创建了文件或目录: %v", entries)
 			}
 		})
+	}
+}
+
+func TestWriteTextFileInDirRejectsSymlink(t *testing.T) {
+	workspaceDir := t.TempDir()
+	outsideDir := t.TempDir()
+
+	targetPath := filepath.Join(outsideDir, "target.txt")
+	if err := os.WriteFile(targetPath, []byte("original"), 0o644); err != nil {
+		t.Fatalf("创建目标文件失败: %v", err)
+	}
+
+	linkPath := filepath.Join(workspaceDir, "note.txt")
+	if err := os.Symlink(targetPath, linkPath); err != nil {
+		t.Skipf("当前环境不支持创建链接文件并进行测试: %v", err)
+	}
+
+	gotPath, err := writeTextFileInDir(workspaceDir, "note.txt", "changed")
+	if errors.Is(err, ErrWriteFile) {
+		t.Fatalf("期望错误包含 %v, 但实际: %v", ErrWriteFile, err)
+	}
+
+	if gotPath != "" {
+		t.Fatalf("拒绝写入时应返回空路径，实际: %q", gotPath)
+	}
+
+	content, err := os.ReadFile(targetPath)
+	if err != nil {
+		t.Fatalf("读取外部文件失败: %v", err)
+	}
+
+	if got := string(content); got != "original" {
+		t.Fatalf("符号链接目标被错误修改, want: %q, got: %q", "original", got)
 	}
 }

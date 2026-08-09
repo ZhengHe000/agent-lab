@@ -150,7 +150,7 @@ func TestWriteTextFileTool(t *testing.T) {
 				!strings.Contains(testConfirmer.request.Details, "Hi") {
 				t.Fatalf("确认请求没有准确展示写入操作")
 			}
-			
+
 			if !strings.Contains(got, "test.txt") {
 				t.Fatalf("期望 write_text_file 的调用结果中包换test.txt, 但实际: %s", got)
 			}
