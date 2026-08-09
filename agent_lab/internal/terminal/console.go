@@ -60,7 +60,7 @@ func (c *Console) Confirm(ctx context.Context, request tool.ConfirmationRequest)
 	}
 
 	if strings.TrimSpace(request.Action) == "" {
-		return false, fmt.Errorf("确认操作表示不能为空")
+		return false, fmt.Errorf("确认操作标识不能为空")
 	}
 
 	if strings.TrimSpace(request.Summary) == "" {
