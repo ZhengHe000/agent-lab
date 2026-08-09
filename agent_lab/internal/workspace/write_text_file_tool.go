@@ -37,12 +37,12 @@ func newWriteTextFileTool(dir string, confirmer tool.Confirmer) (*WriteTextFileT
 	}, nil
 }
 
-type WriteTextFileArguments struct {
+type writeTextFileArguments struct {
 	Filename string `json:"filename"`
 	Content  string `json:"content"`
 }
 
-var writeTextFileparameters = json.RawMessage(`{
+var writeTextFileParameters = json.RawMessage(`{
 "type": "object",
 "properties": {
 "filename":{
@@ -63,7 +63,7 @@ func (t *WriteTextFileTool) Definition() model.ToolDefinition {
 		Name: "write_text_file",
 		Description: "经过用户明确确认后, 在受控工作区中创建或覆盖文本文件." +
 			"仅当用户要求保存或创建或修改文件内容时使用",
-		Parameters: writeTextFileparameters,
+		Parameters: writeTextFileParameters,
 	}
 }
 
@@ -72,7 +72,7 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 		return "", fmt.Errorf("写入文件前上下文已经结束: %w", err)
 	}
 
-	var args WriteTextFileArguments
+	var args writeTextFileArguments
 	if err := json.Unmarshal(arguments, &args); err != nil {
 		return "", fmt.Errorf("解析 write_text_file 参数失败: %w", err)
 	}
