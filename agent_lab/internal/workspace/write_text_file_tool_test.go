@@ -58,6 +58,7 @@ func TestWriteTextFileTool(t *testing.T) {
 			wantCallCount:     1,
 			wantFile:          false,
 			testArguments:     arguments,
+			wantContent:       "",
 		},
 		{
 			name:           "参数非法时不请求确认",
@@ -146,10 +147,10 @@ func TestWriteTextFileTool(t *testing.T) {
 
 			if testConfirmer.request.Action != "write_text_file" ||
 				!strings.Contains(testConfirmer.request.Summary, "创建或覆盖文件") ||
-				!strings.Contains(testConfirmer.request.Details, tt.wantContent) {
-				t.Fatalf("确认程序 为客户展示的内容错误")
+				!strings.Contains(testConfirmer.request.Details, "Hi") {
+				t.Fatalf("确认请求没有准确展示写入操作")
 			}
-
+			
 			if !strings.Contains(got, "test.txt") {
 				t.Fatalf("期望 write_text_file 的调用结果中包换test.txt, 但实际: %s", got)
 			}
