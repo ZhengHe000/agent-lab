@@ -144,7 +144,7 @@ func toChatMessage(modelMessage model.Message) (chatMessage, error) {
 	for _, toolCall := range modelMessage.ToolCalls {
 		chatToolCall := chatToolCall{
 			ID:   toolCall.ID,
-			Type: "function", // 默认写死function
+			Type: "function", // 默认 function
 			Function: chatFunctionCall{
 				Name:      toolCall.Name,
 				Arguments: string(toolCall.Arguments), //将内部信息强转换为string

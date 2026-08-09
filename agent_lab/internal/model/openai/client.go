@@ -73,11 +73,11 @@ func (c *Client) Complete(ctx context.Context, request model.Request) (model.Res
 		return model.Response{}, fmt.Errorf("读取响应体失败, 错误: %w", err)
 	}
 
-	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices { //检查响应状态
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
 		return model.Response{}, fmt.Errorf("响应码错误, 响应体: %s, 状态码: %d", string(respBytes), resp.StatusCode)
 	}
 
-	var chatCompletionResponse chatCompletionResponse                          // 创建容器
+	var chatCompletionResponse chatCompletionResponse
 	if err := json.Unmarshal(respBytes, &chatCompletionResponse); err != nil { // 将响应内容解析到外部响应结构体中
 		return model.Response{}, fmt.Errorf("响应解析失败, 错误: %w", err)
 	}
