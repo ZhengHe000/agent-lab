@@ -47,9 +47,15 @@ func run() error {
 		return fmt.Errorf("客户端配置失败: %w", err)
 	}
 
+	writeTextFileTool, err := workspace.NewWriteTextFileTool(console)
+	if err != nil {
+		return fmt.Errorf("创建文本写入工具失败: %w", err)
+	}
+
 	toolsRegistry, err := tool.NewRegistry( // 工具注册表
 		workspace.NewReadTextFileTool(),
 		workspace.NewListTextFilesTool(),
+		writeTextFileTool,
 	)
 
 	if err != nil {
