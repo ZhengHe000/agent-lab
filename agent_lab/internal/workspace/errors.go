@@ -17,12 +17,6 @@ var (
 	// os.WriteFile 失败时返回此错误
 	ErrWriteFile = errors.New("文件写入失败")
 
-	// 当用户或逻辑选择拒绝继续写入操作时，返回此错误
-	ErrWriteCancelled = errors.New("写入操作已取消")
-
-	// 当输入内容无效（如期望 `y` 或 `n` 却得到其他值）时，返回此错误
-	ErrInvalidInput = errors.New("无效输入，请输入 y 或 n")
-
 	// ErrReadFile 表示读取文件时失败
 	ErrReadFile = errors.New("读取文件失败")
 

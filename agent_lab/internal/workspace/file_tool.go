@@ -1,7 +1,6 @@
 package workspace
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -76,10 +75,6 @@ func validateFilename(filename string) error { // validateFilename 判断文件�
 	return nil
 }
 
-func writeTextFile(filename string, content string) (string, error) {
-	return writeTextFileInDir(workspaceDir, filename, content)
-}
-
 func writeTextFileInDir(dir string, filename string, content string) (string, error) {
 	if err := validateFilename(filename); err != nil {
 		return "", err
@@ -113,102 +108,6 @@ func writeTextFileInDir(dir string, filename string, content string) (string, er
 	}
 
 	return filePath, nil
-}
-
-func confirmWrite(
-	reader io.Reader,
-	writer io.Writer,
-	filename string,
-	content string,
-) (bool, error) {
-
-	const promptTemplate = `即将覆盖写入文件。
-
-文件名：%s
-内容长度：%d 字符，%d 字节
-内容预览：
-%s
-
-确认写入？请输入 y 或 n:`
-
-	characterCount := utf8.RuneCountInString(content)
-	byteCount := len(content)
-
-	prompt := fmt.Sprintf(
-		promptTemplate,
-		filename,
-		characterCount,
-		byteCount,
-		content,
-	)
-
-	_, err := writer.Write([]byte(prompt))
-	if err != nil {
-		return false, fmt.Errorf("输出确认提示失败: %w", err)
-	}
-
-	scanner := bufio.NewScanner(reader)
-
-	if !scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return false, fmt.Errorf("读取确认输入失败: %w", err)
-		}
-		return false, fmt.Errorf("未读取到确认输入")
-	}
-
-	decision := strings.TrimSpace(scanner.Text())
-
-	switch decision {
-	case "y", "Y":
-		return true, nil
-	case "n", "N":
-		return false, nil
-	default:
-		return false, fmt.Errorf("收到无效输入: %q, %w", decision, ErrInvalidInput)
-	}
-
-}
-
-func confirmAndWriteTextFile(
-	reader io.Reader,
-	writer io.Writer,
-	filename string,
-	content string,
-) (string, error) {
-	return confirmAndWriteTextFileInDir(
-		workspaceDir,
-		reader,
-		writer,
-		filename,
-		content,
-	)
-}
-
-func confirmAndWriteTextFileInDir(
-	dir string,
-	reader io.Reader,
-	writer io.Writer,
-	filename string,
-	content string,
-) (string, error) {
-	if err := validateFilename(filename); err != nil {
-		return "", err
-	}
-
-	if err := validateContent(content); err != nil {
-		return "", err
-	}
-
-	confirmed, err := confirmWrite(reader, writer, filename, content)
-	if err != nil {
-		return "", err
-	}
-
-	if !confirmed {
-		return "", ErrWriteCancelled
-	}
-
-	return writeTextFileInDir(dir, filename, content)
 }
 
 func readTextFile(filename string) (string, error) {
