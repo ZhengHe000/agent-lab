@@ -1,5 +1,3 @@
-# agent-lab
-
 # Agent Lab
 
 Agent Lab 是一个使用 Go 实现的命令行 Agent 实验项目。
