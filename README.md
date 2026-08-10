@@ -119,13 +119,13 @@ go test ./...
 
 ```mermaid
 flowchart TD
-    User[用户] --> Console[Terminal Console]
-    Console --> Main[程序装配入口]
+    User[用户] <--> Console[Terminal Console]
 
     Main --> Config[Config]
     Main --> Client[OpenAI-compatible Client]
     Main --> Registry[Tool Registry]
     Main --> Runtime[Agent Runtime]
+    Main --> Console
 
     Runtime --> Client
     Runtime --> Registry
