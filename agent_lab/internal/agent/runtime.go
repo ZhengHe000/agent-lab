@@ -11,23 +11,25 @@ import (
 
 const maxModelSteps = 8
 
+// Runtime 管理对话历史和单轮内的多步工具调用。
 type Runtime struct {
-	llm       model.Model     // 使用模型的能力
-	modelName string          // 模型名称
-	messages  []model.Message // 上下文历史
-	tools     *tool.Registry  // 持有注册表
+	llm       model.Model
+	modelName string
+	messages  []model.Message
+	tools     *tool.Registry
 }
 
+// NewRuntime 创建Agent运行时。
 func NewRuntime(llm model.Model, modelName string, systemPrompt string, tools *tool.Registry) (*Runtime, error) {
-	if llm == nil { // 检查模型
+	if llm == nil {
 		return nil, fmt.Errorf("model 不能为空")
 	}
 
-	if strings.TrimSpace(modelName) == "" { // 检查模型名称
+	if strings.TrimSpace(modelName) == "" {
 		return nil, fmt.Errorf("模型名 不能为空")
 	}
 
-	if strings.TrimSpace(systemPrompt) == "" { // 检查系统提示词
+	if strings.TrimSpace(systemPrompt) == "" {
 		return nil, fmt.Errorf("系统提示词 不能为空")
 	}
 
@@ -35,7 +37,7 @@ func NewRuntime(llm model.Model, modelName string, systemPrompt string, tools *t
 		return nil, fmt.Errorf("工具注册表不能为空")
 	}
 
-	runtime := &Runtime{ // 组装Runtime并取地址
+	runtime := &Runtime{
 		llm:       llm,
 		modelName: strings.TrimSpace(modelName),
 		messages: []model.Message{
@@ -50,21 +52,24 @@ func NewRuntime(llm model.Model, modelName string, systemPrompt string, tools *t
 	return runtime, nil
 }
 
+// RunTurn 执行一轮用户输入。
+//
+// 只有取得最终模型回答后，本轮候选消息才会提交到正式历史。
 func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 	input = strings.TrimSpace(input)
-	if input == "" { // 检查用户输入
+	if input == "" {
 		return "", fmt.Errorf("input 不能为空")
 	}
 
-	workingMessages := make([]model.Message, 0, len(r.messages)+1) // 创建容器
-	workingMessages = append(workingMessages, r.messages...)       // 将正式历史当作上下文
-	workingMessages = append(workingMessages, model.Message{       // 将本轮输入追加至末尾
+	workingMessages := make([]model.Message, 0, len(r.messages)+1)
+	workingMessages = append(workingMessages, r.messages...)
+	workingMessages = append(workingMessages, model.Message{
 		Role:    model.RoleUser,
 		Content: input,
 	})
 
-	for stop := 0; stop < maxModelSteps; stop++ { // 进入轮次受控循环
-		response, err := r.llm.Complete(ctx, model.Request{ // 调用模型回复
+	for step := 0; step < maxModelSteps; step++ { // 进入轮次受控循环。
+		response, err := r.llm.Complete(ctx, model.Request{
 			Model:    r.modelName,
 			Messages: workingMessages,
 			Tools:    r.tools.Definitions(),
@@ -74,7 +79,7 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 		}
 
 		message := response.Message
-		if message.Role != model.RoleAssistant { // 检查响应角色, 必须是 model.RoleAssistant
+		if message.Role != model.RoleAssistant {
 			return "", fmt.Errorf("%w: want %q, got: %q", ErrResponseRoleError, model.RoleAssistant, message.Role)
 		}
 

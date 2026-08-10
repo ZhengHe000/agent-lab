@@ -9,17 +9,20 @@ import (
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 )
 
+// ListTextFilesTool 列出受控工作区中的可读取文本文件。
 type ListTextFilesTool struct {
 	dir string
 }
 
+// NewListTextFilesTool 创建使用正式工作区的文件列表工具。
 func NewListTextFilesTool() *ListTextFilesTool {
 	return &ListTextFilesTool{
 		dir: workspaceDir,
 	}
 }
 
-func newListTextFilesToolInDir(dir string) *ListTextFilesTool { // 测试时注入t.Dir隔离环境
+// 测试注入t.Dir隔离环境。
+func newListTextFilesToolInDir(dir string) *ListTextFilesTool {
 	return &ListTextFilesTool{
 		dir: dir,
 	}

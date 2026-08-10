@@ -26,7 +26,7 @@ func main() {
 func run() error {
 	console, err := terminal.NewConsole(os.Stdin, os.Stdout)
 	if err != nil {
-		return fmt.Errorf("终端交互对象 创建失败: %w", err)
+		return fmt.Errorf("创建终端交互对象失败: %w", err)
 	}
 
 	if err := config.LoadEnvFile("agent_lab/.env.local"); err != nil {
@@ -52,7 +52,7 @@ func run() error {
 		return fmt.Errorf("创建文本写入工具失败: %w", err)
 	}
 
-	toolsRegistry, err := tool.NewRegistry( // 工具注册表
+	toolsRegistry, err := tool.NewRegistry(
 		workspace.NewReadTextFileTool(),
 		workspace.NewListTextFilesTool(),
 		writeTextFileTool,
@@ -69,7 +69,6 @@ func run() error {
 
 	fmt.Println("Agent Lab 已启动, 输入 exit 退出")
 	for {
-
 		input, err := console.ReadLine("狰和: ")
 		if err != nil {
 			if errors.Is(err, io.EOF) {

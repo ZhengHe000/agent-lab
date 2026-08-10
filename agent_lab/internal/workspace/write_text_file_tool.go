@@ -11,13 +11,13 @@ import (
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 )
 
-// WriteTextFileTool 经用户确认后在工作区写入文件
+// WriteTextFileTool 经用户确认后，在受控工作区中创建或覆盖文本文件。
 type WriteTextFileTool struct {
 	dir       string
 	confirmer tool.Confirmer
 }
 
-// NewWriteTextFileTool 创建使用正式工作区的文本写入工具
+// NewWriteTextFileTool 创建使用正式工作区的文本写入工具。
 func NewWriteTextFileTool(confirmer tool.Confirmer) (*WriteTextFileTool, error) {
 	return newWriteTextFileTool(workspaceDir, confirmer)
 }

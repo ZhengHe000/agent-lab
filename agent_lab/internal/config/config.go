@@ -7,10 +7,12 @@ import (
 	"time"
 )
 
-const defaultModelName = "deepseek-v4-flash"                        // 默认模型
-const defaultEndpoint = "https://api.deepseek.com/chat/completions" // 默认URL
-const defaultTimeout = "60s"                                        // 默认超时
-const defaultSystemPrompt = `你是智能专家Noah,以专业角度和成熟冷静的逻辑链来解决问题和对话`     // 默认提示词
+const (
+	defaultModelName    = "deepseek-v4-flash"
+	defaultEndpoint     = "https://api.deepseek.com/chat/completions"
+	defaultTimeout      = "60s"
+	defaultSystemPrompt = "你是智能专家Noah, 以专业角度和成熟冷静的逻辑处理问题和对话。"
+)
 
 type Config struct {
 	Model ModelConfig
@@ -50,7 +52,7 @@ func LoadConfig() (Config, error) {
 
 	timeout, err := time.ParseDuration(modelTimeoutText)
 	if err != nil {
-		return Config{}, fmt.Errorf("[环境变量] REQUEST_TIMEOUT 解析失败, 错误: %w ", err)
+		return Config{}, fmt.Errorf("[环境变量] REQUEST_TIMEOUT 解析失败: %w ", err)
 	}
 
 	config := Config{

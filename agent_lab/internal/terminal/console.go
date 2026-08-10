@@ -10,14 +10,15 @@ import (
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 )
 
-// Console 统一管理命令行程序的文本输入和输出
-// 一个Console应同时用与主对话和副作用确认上, 避免多个缓冲读取器竞争同一个输入源
+// Console 统一管理命令行程序的文本输入和输出。
+// 同一个Console应同时用于主对话和副作用确认，避免多个缓冲读取器
+// 竞争同一个输入源。
 type Console struct {
 	reader *bufio.Reader
 	writer io.Writer
 }
 
-// NewConsole 创建终端交互对象
+// NewConsole 创建终端交互对象。
 func NewConsole(reader io.Reader, writer io.Writer) (*Console, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("终端输入不能为空")
@@ -33,7 +34,7 @@ func NewConsole(reader io.Reader, writer io.Writer) (*Console, error) {
 	}, nil
 }
 
-// ReadLine 输出提示并读取一行文本
+// ReadLine 输出提示并读取一行文本。
 func (c *Console) ReadLine(prompt string) (string, error) {
 	if _, err := fmt.Fprint(c.writer, prompt); err != nil {
 		return "", fmt.Errorf("输出终端提示失败: %w", err)

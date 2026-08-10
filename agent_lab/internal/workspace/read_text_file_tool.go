@@ -9,23 +9,27 @@ import (
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
 )
 
+// ReadTextFileTool 读取受控工作区中的指定文本文件。
 type ReadTextFileTool struct {
 	dir string
 }
 
+// NewReadTextFileTool 创建使用正式工作区的文本读取工具。
 func NewReadTextFileTool() *ReadTextFileTool {
 	return &ReadTextFileTool{
 		dir: workspaceDir,
 	}
 }
 
-func newReadTextFileToolInDir(dir string) *ReadTextFileTool { // 方便在workspace的测试中注入临时测试目录
+// 在的测试中注入临时测试目录。
+func newReadTextFileToolInDir(dir string) *ReadTextFileTool {
 	return &ReadTextFileTool{
 		dir: dir,
 	}
 }
 
-type readTextFileArguments struct { // read_text_file工具使用内部结构体解析模型参数
+// read_text_file工具使用内部结构体解析模型参数。
+type readTextFileArguments struct {
 	Filename string `json:"filename"`
 }
 

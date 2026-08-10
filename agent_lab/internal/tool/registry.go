@@ -13,6 +13,7 @@ type Registry struct {
 	definitions []model.ToolDefinition
 }
 
+// NewRegistry 校验并注册工具。
 func NewRegistry(tools ...Tool) (*Registry, error) {
 	registry := &Registry{
 		tools:       make(map[string]Tool, len(tools)),
@@ -54,6 +55,7 @@ func NewRegistry(tools ...Tool) (*Registry, error) {
 	return registry, nil
 }
 
+// Get 按工具名称查找已注册工具。
 func (r *Registry) Get(name string) (Tool, bool) {
 	if r == nil {
 		return nil, false
@@ -63,6 +65,7 @@ func (r *Registry) Get(name string) (Tool, bool) {
 	return registeredTool, exists
 }
 
+// Definitions 返回工具定义的副本。
 func (r *Registry) Definitions() []model.ToolDefinition {
 	if r == nil {
 		return nil
