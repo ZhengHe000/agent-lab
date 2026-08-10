@@ -8,6 +8,7 @@ import (
 	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model"
 )
 
+// Registry 保存工具实现，并提供工具定义列表和名称查找能力。
 type Registry struct {
 	tools       map[string]Tool
 	definitions []model.ToolDefinition

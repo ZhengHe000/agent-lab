@@ -21,14 +21,12 @@ func NewReadTextFileTool() *ReadTextFileTool {
 	}
 }
 
-// 在的测试中注入临时测试目录。
 func newReadTextFileToolInDir(dir string) *ReadTextFileTool {
 	return &ReadTextFileTool{
 		dir: dir,
 	}
 }
 
-// read_text_file工具使用内部结构体解析模型参数。
 type readTextFileArguments struct {
 	Filename string `json:"filename"`
 }

@@ -11,7 +11,7 @@ type ConfirmationRequest struct {
 
 // Confirmer 从模型之外获取用户授权。
 //
-// 实现不得允许模型自行构造确认结果, 授权必须来自用户或其他可信主体。
+// 实现不得允许模型自行构造确认结果，授权必须来自用户或其他可信主体。
 type Confirmer interface {
 	Confirm(ctx context.Context, request ConfirmationRequest) (bool, error)
 }

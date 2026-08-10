@@ -30,7 +30,7 @@ type AgentConfig struct {
 	SystemPrompt string
 }
 
-func envOrDefault(key, defaultValue string) string { // 辅助函数, 当一项[环境配置]可以接受[默认选项]时使用该函数
+func envOrDefault(key, defaultValue string) string {
 	envValue := strings.TrimSpace(os.Getenv(key))
 	if envValue == "" {
 		return defaultValue
@@ -52,7 +52,7 @@ func LoadConfig() (Config, error) {
 
 	timeout, err := time.ParseDuration(modelTimeoutText)
 	if err != nil {
-		return Config{}, fmt.Errorf("[环境变量] REQUEST_TIMEOUT 解析失败: %w ", err)
+		return Config{}, fmt.Errorf("[环境变量] REQUEST_TIMEOUT 解析失败: %w", err)
 	}
 
 	config := Config{

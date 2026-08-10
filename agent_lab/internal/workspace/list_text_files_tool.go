@@ -21,7 +21,6 @@ func NewListTextFilesTool() *ListTextFilesTool {
 	}
 }
 
-// 测试注入t.Dir隔离环境。
 func newListTextFilesToolInDir(dir string) *ListTextFilesTool {
 	return &ListTextFilesTool{
 		dir: dir,

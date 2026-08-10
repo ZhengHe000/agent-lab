@@ -23,9 +23,9 @@ type ToolDefinition struct {
 }
 
 // ToolCall 描述模型发起的一次工具调用。
-
 type ToolCall struct {
-	ID        string // ID 必须原样写入对应工具结果消息的ToolCallID。
+	// ID 必须原样写入对应工具结果消息的ToolCallID。
+	ID        string
 	Name      string
 	Arguments json.RawMessage
 }

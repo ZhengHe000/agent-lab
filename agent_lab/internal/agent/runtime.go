@@ -68,7 +68,7 @@ func (r *Runtime) RunTurn(ctx context.Context, input string) (string, error) {
 		Content: input,
 	})
 
-	for step := 0; step < maxModelSteps; step++ { // 进入轮次受控循环。
+	for step := 0; step < maxModelSteps; step++ {
 		response, err := r.llm.Complete(ctx, model.Request{
 			Model:    r.modelName,
 			Messages: workingMessages,
