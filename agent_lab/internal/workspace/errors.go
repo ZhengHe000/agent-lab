@@ -5,21 +5,24 @@ import (
 )
 
 var (
-	// 一个string类型 的 内容为""(也就是空)时 应该使用的错误
+	// 内容为空
 	ErrContentEmpty = errors.New("内容不能为空")
 
-	// 用于表示内容格式与预设的正则表达式规则不匹配时返回的错误
+	// 内容与规则不符
 	ErrInvalidFilename = errors.New("内容格式与正则规则不符")
 
-	// os.MkdirAll 失败时返回此错误
+	// os.MkdirAll 创建目录失败
 	ErrMkdirAll = errors.New("创建目录失败")
 
-	// os.WriteFile 失败时返回此错误
+	// os.WriteFile 写入文件失败
 	ErrWriteFile = errors.New("文件写入失败")
 
-	// ErrReadFile 表示读取文件时失败
+	// ErrReadFile 读取文件时失败
 	ErrReadFile = errors.New("读取文件失败")
 
-	// ErrFileTooLarge 表示待读取文件超过允许的最大大小。
+	// ErrFileTooLarge 读取文件超过限制。
 	ErrFileTooLarge = errors.New("文件内容超过允许读取的大小")
+
+	// ErrInvalidPath 非法路径
+	ErrInvalidPath = errors.New("非法路径")
 )
