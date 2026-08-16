@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model"
+	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/model"
 )
 
 func toModelResponse(response chatCompletionResponse) (model.Response, error) { // 将外部响应转换成内部结构

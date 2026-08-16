@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ZhengHe000/agent-lab/agent_lab/internal/agent"
-	"github.com/ZhengHe000/agent-lab/agent_lab/internal/config"
-	"github.com/ZhengHe000/agent-lab/agent_lab/internal/model/openai"
-	"github.com/ZhengHe000/agent-lab/agent_lab/internal/terminal"
-	"github.com/ZhengHe000/agent-lab/agent_lab/internal/tool"
-	"github.com/ZhengHe000/agent-lab/agent_lab/internal/workspace"
+	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/agent"
+	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/config"
+	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/model/openai"
+	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/terminal"
+	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/tool"
+	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/workspace"
 )
 
 func main() {
@@ -69,7 +69,7 @@ func run() error {
 
 	fmt.Println("Agent Lab 已启动, 输入 exit 退出")
 	for {
-		input, err := console.ReadLine("狰和: ")
+		input, err := console.ReadLine(": ")
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return nil
@@ -92,6 +92,6 @@ func run() error {
 			continue
 		}
 
-		fmt.Printf("Noah: %s\n", reply)
+		fmt.Printf("安悬: %s\n", reply)
 	}
 }
