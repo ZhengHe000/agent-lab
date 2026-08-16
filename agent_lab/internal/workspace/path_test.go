@@ -69,7 +69,7 @@ func TestValidToolPath(t *testing.T) {
 			}
 
 			if (err != nil) != tt.wantErr {
-				t.Fatalf("结果异常: %v", err)
+				t.Fatalf("wantErr: %t, got err: %v", tt.wantErr, err)
 			}
 		})
 	}
