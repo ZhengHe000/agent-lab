@@ -32,7 +32,7 @@ func TestIsAllowedTextFile(t *testing.T) {
 		},
 		{
 			name:  "unsupported_suffix",
-			input: "assest/logo.png",
+			input: "assets/logo.png",
 			want:  false,
 		},
 	}
@@ -45,4 +45,22 @@ func TestIsAllowedTextFile(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("Effective_expansion_name_whitelist", func(t *testing.T) {
+		whitelistTests := []string{
+			"main.go",
+			"README.md",
+			"note.txt",
+			"config.json",
+			"config.yaml",
+			"config.yml",
+			"config.toml",
+		}
+
+		for _, toolPath := range whitelistTests {
+			if !isAllowedTextFile(toolPath) {
+				t.Fatalf("want true, but %v is false", toolPath)
+			}
+		}
+	})
 }

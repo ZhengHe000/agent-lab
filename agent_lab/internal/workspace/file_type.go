@@ -5,15 +5,15 @@ import (
 )
 
 func isAllowedTextFile(toolPath string) bool {
-	basePath := path.Base(toolPath)
-	switch basePath {
+	filename := path.Base(toolPath)
+	switch filename {
 	case "go.mod", "go.sum":
 		return true
 	}
 
-	suffix := path.Ext(basePath)
-	switch suffix {
-	case ".go", ".md", ".txt", ".json", ".yaml", ".yml", "toml":
+	extension := path.Ext(filename)
+	switch extension {
+	case ".go", ".md", ".txt", ".json", ".yaml", ".yml", ".toml":
 		return true
 	}
 
