@@ -47,6 +47,18 @@ func TestValidToolPath(t *testing.T) {
 			want:    "",
 			wantErr: true,
 		},
+		{
+			name:    "单独锁定冒号",
+			input:   "C:/project/main.go",
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:    "单独锁定NULL",
+			input:   "bad\x00name.go",
+			want:    "",
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
