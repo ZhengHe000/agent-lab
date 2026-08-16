@@ -45,7 +45,7 @@ func TestValidToolPath(t *testing.T) {
 			name:    "锁定跨平台协议边界",
 			input:   `C:\project\main.go`,
 			want:    "",
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 
@@ -56,11 +56,7 @@ func TestValidToolPath(t *testing.T) {
 				t.Fatalf("want: %v, got: %v", tt.want, got)
 			}
 
-			if err != nil {
-				if tt.wantErr {
-					return
-				}
-
+			if (err != nil) != tt.wantErr {
 				t.Fatalf("结果异常: %v", err)
 			}
 		})
