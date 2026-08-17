@@ -1,6 +1,6 @@
-# Agent Lab
+# Agent AnXuan
 
-Agent Lab 是一个使用 Go 实现的命令行 Agent 实验项目。
+Agent AnXuan 是一个使用 Go 实现的命令行 Agent 实验项目。
 
 项目不依赖现成的 Agent 框架，主要用于学习并实现以下核心机制：
 
