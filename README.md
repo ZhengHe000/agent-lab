@@ -37,10 +37,10 @@ Agent 可以在受控工作区 `./AIWorkspace` 中执行以下操作：
 复制环境变量示例：
 
 ```bash
-cp agent_lab/.env.example agent_lab/.env.local
+cp agent/.env.example agent/.env.local
 ```
 
-编辑 `agent_lab/.env.local`：
+编辑 `agent/.env.local`：
 
 ```env
 AI_API_KEY=your-api-key
@@ -67,7 +67,7 @@ SYSTEM_PROMPT=You are a professional AI assistant.
 在仓库根目录执行：
 
 ```bash
-go run ./agent_lab/cmd/agent-lab
+go run ./agent/cmd/agent
 ```
 
 输入：
@@ -196,8 +196,8 @@ flowchart TD
 ## 项目结构
 
 ```text
-agent_lab/
-├── cmd/agent-lab/       程序入口和依赖装配
+agent/
+├── cmd/agent/       程序入口和依赖装配
 └── internal/
     ├── agent/           Agent运行时和工具循环
     ├── config/          配置加载

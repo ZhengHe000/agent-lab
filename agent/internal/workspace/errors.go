@@ -6,7 +6,7 @@ import (
 
 var (
 	// 内容为空
-	ErrContentEmpty = errors.New("内容不能为空")
+	ErrContentEmpty = errors.New("The content must not be empty")
 
 	// 内容与规则不符
 	ErrInvalidFilename = errors.New("内容格式与正则规则不符")
@@ -25,4 +25,7 @@ var (
 
 	// ErrInvalidPath 非法路径
 	ErrInvalidPath = errors.New("非法路径")
+
+	// ErrOpenWorkspace 打开工作区失败
+	ErrOpenWorkspace = errors.New("Filed to open the workspace")
 )

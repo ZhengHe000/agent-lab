@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/model"
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/tool"
+	"github.com/ZhengHeOwo/agent/agent/internal/model"
+	"github.com/ZhengHeOwo/agent/agent/internal/tool"
 )
 
 const maxModelSteps = 8

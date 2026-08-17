@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/model"
+	"github.com/ZhengHeOwo/agent/agent/internal/model"
 )
 
 // Registry 保存工具实现，并提供工具定义列表和名称查找能力。

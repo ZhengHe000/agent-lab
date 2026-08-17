@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/model"
+	"github.com/ZhengHeOwo/agent/agent/internal/model"
 )
 
 func TestToModelResponse(t *testing.T) {

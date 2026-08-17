@@ -7,8 +7,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/model"
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/tool"
+	"github.com/ZhengHeOwo/agent/agent/internal/model"
+	"github.com/ZhengHeOwo/agent/agent/internal/tool"
 )
 
 // WriteTextFileTool 经用户确认后，在受控工作区中创建或覆盖文本文件。

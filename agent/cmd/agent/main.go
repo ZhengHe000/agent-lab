@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/agent"
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/config"
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/model/openai"
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/terminal"
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/tool"
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/workspace"
+	"github.com/ZhengHeOwo/agent/agent/internal/agent"
+	"github.com/ZhengHeOwo/agent/agent/internal/config"
+	"github.com/ZhengHeOwo/agent/agent/internal/model/openai"
+	"github.com/ZhengHeOwo/agent/agent/internal/terminal"
+	"github.com/ZhengHeOwo/agent/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent/agent/internal/workspace"
 )
 
 func main() {
@@ -29,7 +29,7 @@ func run() error {
 		return fmt.Errorf("创建终端交互对象失败: %w", err)
 	}
 
-	if err := config.LoadEnvFile("agent_lab/.env.local"); err != nil {
+	if err := config.LoadEnvFile("agent/.env.local"); err != nil {
 		return fmt.Errorf("加载环境文件失败: %w", err)
 	}
 

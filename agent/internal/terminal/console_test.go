@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ZhengHeOwo/agent-lab/agent_lab/internal/tool"
+	"github.com/ZhengHeOwo/agent/agent/internal/tool"
 )
 
 func TestConfirm(t *testing.T) {
