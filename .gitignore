@@ -1,1 +1,3 @@
 agent/.env.local
+*.local
+**/.env.local
