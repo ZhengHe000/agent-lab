@@ -12,7 +12,7 @@ type Workspace struct {
 
 func OpenWorkspace(dir string) (*Workspace, error) {
 	if strings.TrimSpace(dir) == "" {
-		return nil, ErrContentEmpty
+		return nil, ErrOpenWorkspace
 	}
 
 	root, err := os.OpenRoot(dir)

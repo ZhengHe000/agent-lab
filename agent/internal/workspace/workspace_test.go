@@ -2,6 +2,7 @@ package workspace
 
 import (
 	"testing"
+	"errors"
 )
 
 func TestLifeCycle(t *testing.T) {
@@ -22,4 +23,25 @@ func TestLifeCycle(t *testing.T) {
 	if cls != nil {
 		t.Fatalf("want nil, got: %v", err)
 	}
+}
+
+func TestInvalidDirIsRejected(t *testing.T) {
+	dirs := []string{
+		"",
+		"project/not_exists",
+	}
+
+	for _, tt := range dirs {
+		t.Run("is rejected dir", func(t *testing.T) {
+			_, err := OpenWorkspace(tt)
+			if err == nil {
+				t.Fatalf("want Err, got nil")
+			}
+
+			if !errors.Is(err, ErrOpenWorkspace) {
+				t.Fatalf("want: %v, got: %v", ErrOpenWorkspace, err)
+			}
+		})
+	}
+
 }
