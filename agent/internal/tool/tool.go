@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/ZhengHeOwo/agent/agent/internal/model"
+	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/model"
 )
 
 // Tool 表示可以暴露给模型并由程序执行的原子操作。

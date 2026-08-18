@@ -27,5 +27,5 @@ var (
 	ErrInvalidPath = errors.New("非法路径")
 
 	// ErrOpenWorkspace 打开工作区失败
-	ErrOpenWorkspace = errors.New("Filed to open the workspace")
+	ErrOpenWorkspace = errors.New("Failed to open the workspace")
 )

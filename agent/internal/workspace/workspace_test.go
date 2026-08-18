@@ -1,8 +1,9 @@
 package workspace
 
 import (
-	"testing"
 	"errors"
+	"path/filepath"
+	"testing"
 )
 
 func TestLifeCycle(t *testing.T) {
@@ -13,27 +14,35 @@ func TestLifeCycle(t *testing.T) {
 		t.Fatalf("want nil, got: %v", err)
 	}
 
-	cls := wok.root.Close()
-	if cls != nil {
-		t.Fatalf("want nil, got: %v", err)
+	if wok == nil || wok.root == nil {
+		t.Fatal("OpenWorkspace returned an incomplete workspace")
+	}
+	if err = wok.Close(); err != nil {
+		t.Fatalf("Close returned error: %v", err)
 	}
 
-	// marginal testing: wok.root.Close Does not support repeated calls
-	cls = wok.root.Close()
-	if cls != nil {
-		t.Fatalf("want nil, got: %v", err)
-	}
 }
 
 func TestInvalidDirIsRejected(t *testing.T) {
-	dirs := []string{
-		"",
-		"project/not_exists",
+	testDir := t.TempDir()
+
+	paths := []struct {
+		name string
+		path string
+	}{
+		{
+			name: "empty",
+			path: "",
+		},
+		{
+			name: "missing",
+			path: filepath.Join(testDir, "missing"),
+		},
 	}
 
-	for _, tt := range dirs {
-		t.Run("is rejected dir", func(t *testing.T) {
-			_, err := OpenWorkspace(tt)
+	for _, tt := range paths {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := OpenWorkspace(tt.path)
 			if err == nil {
 				t.Fatalf("want Err, got nil")
 			}

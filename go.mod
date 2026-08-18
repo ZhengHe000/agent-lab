@@ -1,3 +1,3 @@
-module github.com/ZhengHeOwo/agent
+module github.com/ZhengHeOwo/agent-AuXuan-Anxuan
 
-go 1.26.4
+go 1.26.6
