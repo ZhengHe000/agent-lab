@@ -67,7 +67,7 @@ func run() error {
 		return fmt.Errorf("创建Agent运行器失败: %w", err)
 	}
 
-	fmt.Println("Agent Lab 已启动, 输入 exit 退出")
+	fmt.Println("Agent AnXuan 已启动, 输入 exit 退出")
 	for {
 		input, err := console.ReadLine(": ")
 		if err != nil {
