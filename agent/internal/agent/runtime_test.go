@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/model"
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/tool"
 )
 
 const testModelSystemPrompt = "test-SystemPrompt" // 没有特殊[提示词]的测试需求时 使用该变量即可

@@ -9,15 +9,15 @@ import (
 func TestLifeCycle(t *testing.T) {
 	dir := t.TempDir()
 
-	wok, err := OpenWorkspace(dir)
+	workspace, err := OpenWorkspace(dir)
 	if err != nil {
 		t.Fatalf("want nil, got: %v", err)
 	}
 
-	if wok == nil || wok.root == nil {
+	if workspace == nil || workspace.root == nil {
 		t.Fatal("OpenWorkspace returned an incomplete workspace")
 	}
-	if err = wok.Close(); err != nil {
+	if err = workspace.Close(); err != nil {
 		t.Fatalf("Close returned error: %v", err)
 	}
 

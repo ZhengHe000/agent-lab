@@ -1,3 +1,7 @@
-agent/.env.local
-*.local
-**/.env.local
+.env
+.env.*
+**/.env
+**/.env.*
+
+!.env.example
+!**/.env.example

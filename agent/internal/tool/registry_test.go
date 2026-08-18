@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model"
 )
 
 var testParameters json.RawMessage = json.RawMessage(`{"test":"arguments"}`)

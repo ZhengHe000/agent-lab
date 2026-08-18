@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/model"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model"
 )
 
 func TestClientComplete(t *testing.T) {

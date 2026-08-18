@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/agent"
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/config"
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/model/openai"
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/terminal"
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/tool"
-	"github.com/ZhengHeOwo/agent-AuXuan/agent/internal/workspace"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/agent"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/config"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model/openai"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/terminal"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/tool"
+	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/workspace"
 )
 
 func main() {
