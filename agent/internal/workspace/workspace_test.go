@@ -54,4 +54,3 @@ func TestInvalidDirIsRejected(t *testing.T) {
 	}
 
 }
-

@@ -1,11 +1,11 @@
 package workspace
 
 import (
+	"bytes"
 	"errors"
 	"os"
 	"path/filepath"
 	"strings"
-	"bytes"
 	"testing"
 )
 
