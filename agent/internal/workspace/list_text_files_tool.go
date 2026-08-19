@@ -17,7 +17,7 @@ type ListTextFilesTool struct {
 // NewListTextFilesTool 创建使用正式工作区的文件列表工具。
 func NewListTextFilesTool() *ListTextFilesTool {
 	return &ListTextFilesTool{
-		dir: workspaceDir,
+		dir: DefaultDir,
 	}
 }
 
