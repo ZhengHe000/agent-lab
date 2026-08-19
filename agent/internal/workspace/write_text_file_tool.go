@@ -19,7 +19,7 @@ type WriteTextFileTool struct {
 
 // NewWriteTextFileTool 创建使用正式工作区的文本写入工具。
 func NewWriteTextFileTool(confirmer tool.Confirmer) (*WriteTextFileTool, error) {
-	return newWriteTextFileTool(workspaceDir, confirmer)
+	return newWriteTextFileTool(DefaultDir, confirmer)
 }
 
 func newWriteTextFileTool(dir string, confirmer tool.Confirmer) (*WriteTextFileTool, error) {

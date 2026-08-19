@@ -11,60 +11,62 @@ import (
 
 // ReadTextFileTool 读取受控工作区中的指定文本文件。
 type ReadTextFileTool struct {
-	dir string
+	workspace *Workspace
 }
 
 // NewReadTextFileTool 创建使用正式工作区的文本读取工具。
-func NewReadTextFileTool() *ReadTextFileTool {
-	return &ReadTextFileTool{
-		dir: workspaceDir,
+func NewReadTextFileTool(workspace *Workspace) (*ReadTextFileTool, error) {
+	if workspace == nil || workspace.root == nil {
+		return nil, fmt.Errorf("created Read_Text_File_Tool failed: workspace is nil")
 	}
-}
 
-func newReadTextFileToolInDir(dir string) *ReadTextFileTool {
 	return &ReadTextFileTool{
-		dir: dir,
-	}
+		workspace: workspace,
+	}, nil
 }
 
 type readTextFileArguments struct {
-	Filename string `json:"filename"`
+	Path string `json:"path"`
 }
 
 var readTextFileParameters = json.RawMessage(`{
             "type": "object",
             "properties": {
-            "filename": {
+            "path": {
                 "type": "string",
-                "description": "要读取的文本文件名, 例如note.txt"
+                "description": "Workspace-relative text file path using '/' separators, for example internal/config/config.go"
             }
         },
-        "required": ["filename"],
+        "required": ["path"],
         "additionalProperties": false
     }`)
 
 func (r *ReadTextFileTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "read_text_file",
-		Description: "读取受控工作区中指定文本文件的完整内容." +
-			"当用户需要查看某个工作区文本文件时使用.",
+		Description: "Read an allowed text file from the controlled workspace." +
+			"using a workspace-relative path.",
 		Parameters: readTextFileParameters,
 	}
 }
 
 func (r *ReadTextFileTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("读取文件前上下文已结束: %w", err)
+		return "", fmt.Errorf("context canceled before tool execution: %w", err)
 	}
 
 	var args readTextFileArguments
 	if err := json.Unmarshal(arguments, &args); err != nil {
-		return "", fmt.Errorf("解析 read_text_file 参数失败: %w", err)
+		return "", fmt.Errorf("parsed read_text_file arguments failed: %w", err)
 	}
 
-	content, err := readTextFileInDir(r.dir, args.Filename)
+	content, err := r.workspace.ReadTextFile(args.Path)
 	if err != nil {
-		return "", fmt.Errorf("执行 read_text_file 失败: %w", err)
+		return "", fmt.Errorf("executed read_text_file failed: %w", err)
+	}
+
+	if err := ctx.Err(); err != nil {
+		return "", fmt.Errorf("context canceled before result returned: %w", err)
 	}
 
 	return content, nil

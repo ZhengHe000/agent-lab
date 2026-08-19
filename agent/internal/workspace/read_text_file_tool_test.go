@@ -5,60 +5,122 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 )
 
-func TestReadTextFileTool_Definition(t *testing.T) {
-	testDir := t.TempDir()
+func openTestWorkspace(t *testing.T, dir string) *Workspace {
+	t.Helper()
 
-	testTool := newReadTextFileToolInDir(testDir)
-
-	testDfn := testTool.Definition()
-
-	if testDfn.Name != "read_text_file" {
-		t.Fatalf("want: %s, got: %s", "read_text_file", testDfn.Name)
-	}
-
-	if !json.Valid(testDfn.Parameters) {
-		t.Fatalf("JSON格式错误: %v", testDfn.Parameters)
-	}
-}
-
-func TestReadTextFileTool_Execute_Success(t *testing.T) {
-	testDir := t.TempDir()
-	testPath := filepath.Join(testDir, "target.txt")
-
-	if err := os.WriteFile(testPath, []byte("zero"), 0o644); err != nil {
-		t.Fatalf("准备测试文件失败: %v", err)
-	}
-
-	testArgs := json.RawMessage(`{"filename":"target.txt"}`)
-
-	testTool := newReadTextFileToolInDir(testDir)
-
-	resp, err := testTool.Execute(context.Background(), testArgs)
+	workspace, err := OpenWorkspace(dir)
 	if err != nil {
-		t.Fatalf("执行Tool函数失败: %v", err)
+		t.Fatalf("Helper_OpenWorkspace() create workspace failed, %v: %v", dir, err)
 	}
 
-	if resp != "zero" {
-		t.Fatalf("获取的文件内容与期望的 %s 不符, 实际: %s", "zero", resp)
+	t.Cleanup(func() {
+		_ = workspace.Close()
+	})
+
+	return workspace
+}
+
+func TestReadTextFileTool_definition_exposes_path_schema(t *testing.T) {
+	testDir := t.TempDir()
+
+	workspace := openTestWorkspace(t, testDir)
+
+	readTool, err := NewReadTextFileTool(workspace)
+	if err != nil {
+		t.Fatalf("got ReadTool failed: %v", err)
+	}
+
+	definition := readTool.Definition()
+	if definition.Name != "read_text_file" {
+		t.Fatalf("want: %v, got: %v", "read_text_file", definition.Name)
+	}
+	var schema struct {
+		Required   []string                   `json:"required"`
+		Properties map[string]json.RawMessage `json:"properties"`
+	}
+
+	if err := json.Unmarshal(definition.Parameters, &schema); err != nil {
+		t.Fatalf("parsed definition.Parameters failed: %v", err)
+	}
+
+	if _, exists := schema.Properties["path"]; !exists {
+		t.Fatalf("want true, got %v", exists)
+	}
+
+	// 用于检查确认第一次工具升级时淘汰的字段"filename"不存在, 注:filename被替换为path.
+	if _, exists := schema.Properties["filename"]; exists {
+		t.Fatalf("want false, got %v", exists)
+	}
+
+	if !slices.Contains(schema.Required, "path") {
+		t.Fatalf("want required comprise path arguments, but not")
 	}
 }
 
-func TestReadTextFileTool_Execute_InvalidJSON(t *testing.T) {
-	testDir := t.TempDir()
+func TestReadTextFileTool_nested_path_returns_content(t *testing.T) {
+	dir := t.TempDir()
+	nestedDir := filepath.Join(dir, "internal", "config")
 
-	testArgs := json.RawMessage(`{"filename":"//\\ww.dd"`)
-
-	testTool := newReadTextFileToolInDir(testDir)
-
-	resp, err := testTool.Execute(context.Background(), testArgs)
-	if err == nil {
-		t.Fatalf("执行Tool函数失败时得到的err为nil")
+	if err := os.MkdirAll(nestedDir, 0o755); err != nil {
+		t.Fatalf("os.MkdirAll(%q) error = %v, want nil", nestedDir, err)
 	}
 
-	if resp != "" {
-		t.Fatalf("获取文件错误时应获得空, 实际: %s", resp)
+	filePath := filepath.Join(nestedDir, "config.go")
+	if err := os.WriteFile(filePath, []byte("package config"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile(%q) error = %v, want nil", filePath, err)
+	}
+
+	projectWorkspace := openTestWorkspace(t, dir)
+
+	readTool, err := NewReadTextFileTool(projectWorkspace)
+	if err != nil {
+		t.Fatalf("NewReadTextFileTool() error = %v, want nil", err)
+	}
+
+	arguments := json.RawMessage(
+		`{"path":"internal/config/config.go"}`,
+	)
+
+	got, err := readTool.Execute(context.Background(), arguments)
+	if err != nil {
+		t.Fatalf("Execute(%s) error = %v, want nil", arguments, err)
+	}
+
+	if got != "package config" {
+		t.Fatalf("Execute(%s) = %q, want %q", arguments, got, "package config")
+	}
+}
+
+func TestReadTextFileTool_invalid_json_returns_error(t *testing.T) {
+	projectWorkspace := openTestWorkspace(t, t.TempDir())
+
+	readTool, err := NewReadTextFileTool(projectWorkspace)
+	if err != nil {
+		t.Fatalf(
+			"NewReadTextFileTool() error = %v, want nil",
+			err,
+		)
+	}
+
+	arguments := json.RawMessage(`{"path":`)
+
+	got, err := readTool.Execute(context.Background(), arguments)
+	if err == nil {
+		t.Fatalf(
+			"Execute(%s) error = nil, want non-nil",
+			arguments,
+		)
+	}
+
+	if got != "" {
+		t.Fatalf(
+			"Execute(%s) = %q, want empty string",
+			arguments,
+			got,
+		)
 	}
 }

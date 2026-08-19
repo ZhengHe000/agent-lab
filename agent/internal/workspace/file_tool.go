@@ -2,7 +2,6 @@ package workspace
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -27,12 +26,6 @@ type RuneTooLongError struct {
 func (r *RuneTooLongError) Error() string {
 	return fmt.Sprintf("内容过长, 限制 %d 字符, 当前 %d 字符", r.limit, r.actual)
 }
-
-const ( // 默认条件
-
-	// workspaceDir 受控工作区。
-	workspaceDir = `./AIWorkspace`
-)
 
 func validateContent(content string) error { // validateContent 判断内容合法性
 
@@ -107,52 +100,8 @@ func writeTextFileInDir(dir string, filename string, content string) (string, er
 	return filePath, nil
 }
 
-func readTextFile(filename string) (string, error) {
-	return readTextFileInDir(workspaceDir, filename)
-}
-
-func readTextFileInDir(dir string, filename string) (string, error) {
-	if err := validateFilename(filename); err != nil {
-		return "", err
-	}
-
-	filePath := filepath.Join(dir, filename)
-
-	info, err := os.Lstat(filePath)
-	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrReadFile, err)
-	}
-
-	if info.Mode()&os.ModeSymlink != 0 {
-		return "", fmt.Errorf("%w: 拒绝读取符号链接", ErrReadFile)
-	}
-
-	if !info.Mode().IsRegular() {
-		return "", fmt.Errorf("%w: 只能读取普通文件", ErrReadFile)
-	}
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrReadFile, err)
-	}
-	defer file.Close()
-
-	limitedReader := io.LimitReader(file, int64(maxReadBytes+1))
-
-	data, err := io.ReadAll(limitedReader)
-	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrReadFile, err)
-	}
-
-	if len(data) > maxReadBytes {
-		return "", ErrFileTooLarge
-	}
-
-	return string(data), nil
-}
-
 func listTextFiles() ([]string, error) {
-	return listTextFilesInDir(workspaceDir)
+	return listTextFilesInDir(DefaultDir)
 }
 
 func listTextFilesInDir(dir string) ([]string, error) {
