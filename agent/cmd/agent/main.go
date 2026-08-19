@@ -53,23 +53,23 @@ func run() error {
 	}
 
 	if err := os.MkdirAll(workspace.DefaultDir, 0o700); err != nil {
-		return fmt.Errorf("creat workDir %q: %w", workspace.DefaultDir, err)
+		return fmt.Errorf("create workspace directory %q: %w", workspace.DefaultDir, err)
 	}
 
-	worksp, err := workspace.OpenWorkspace(workspace.DefaultDir)
+	projectWorkspace, err := workspace.OpenWorkspace(workspace.DefaultDir)
 	if err != nil {
 		return fmt.Errorf("open workspace %q: %w", workspace.DefaultDir, err)
 	}
 	defer func() {
-		_ = worksp.Close()
+		_ = projectWorkspace.Close()
 	}()
 
-	read_Text_File_Tool, err := workspace.NewReadTextFileTool(worksp)
+	readTextFileTool, err := workspace.NewReadTextFileTool(projectWorkspace)
 	if err != nil {
-		return fmt.Errorf("created ReadTextFileTool failed: %w", err)
+		return fmt.Errorf("create read_text_file tool: %w", err)
 	}
 	toolsRegistry, err := tool.NewRegistry(
-		read_Text_File_Tool,
+		readTextFileTool,
 		workspace.NewListTextFilesTool(),
 		writeTextFileTool,
 	)

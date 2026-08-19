@@ -17,7 +17,7 @@ type ReadTextFileTool struct {
 // NewReadTextFileTool 创建使用正式工作区的文本读取工具。
 func NewReadTextFileTool(workspace *Workspace) (*ReadTextFileTool, error) {
 	if workspace == nil || workspace.root == nil {
-		return nil, fmt.Errorf("created Read_Text_File_Tool failed: workspace is nil")
+		return nil, fmt.Errorf("create read_text_file tool: workspace is nil")
 	}
 
 	return &ReadTextFileTool{
@@ -44,7 +44,7 @@ var readTextFileParameters = json.RawMessage(`{
 func (r *ReadTextFileTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "read_text_file",
-		Description: "Read an allowed text file from the controlled workspace." +
+		Description: "Read an allowed text file from the controlled workspace " +
 			"using a workspace-relative path.",
 		Parameters: readTextFileParameters,
 	}
@@ -62,7 +62,7 @@ func (r *ReadTextFileTool) Execute(ctx context.Context, arguments json.RawMessag
 
 	content, err := r.workspace.ReadTextFile(args.Path)
 	if err != nil {
-		return "", fmt.Errorf("executed read_text_file failed: %w", err)
+		return "", fmt.Errorf("read text file %q: %w", args.Path, err)
 	}
 
 	if err := ctx.Err(); err != nil {
