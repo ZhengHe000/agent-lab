@@ -1,0 +1,12 @@
+2026-
+
+8/20:
+
+workspace 包下的工具放在独立文件, 防止最后workspace.go变得杂乱, 例如单独创建: read.go 或 list.go 
+它们都是 Workspace 的方法` func(w *Workspace) ReadTextFile(){..} `, 所以放 workspace 包下就行.
+
+` read_text_file_tool.go ` 这个格式的文件是满足Tool接口的工具文件
+` read.go ` 则是底层能力实现的文件
+
+第一版的时候工具实现全都堆在` file.tool.go `里了, 这几天升级工具, 里面的内容就可以渐渐删除了,
+还有一堆测试要删了重写, 好麻烦.

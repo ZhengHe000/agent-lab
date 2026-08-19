@@ -57,7 +57,7 @@ func (r *ReadTextFileTool) Execute(ctx context.Context, arguments json.RawMessag
 
 	var args readTextFileArguments
 	if err := json.Unmarshal(arguments, &args); err != nil {
-		return "", fmt.Errorf("parsed read_text_file arguments failed: %w", err)
+		return "", fmt.Errorf("parse read_text_file arguments: %w", err)
 	}
 
 	content, err := r.workspace.ReadTextFile(args.Path)

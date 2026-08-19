@@ -108,6 +108,6 @@ func run() error {
 			continue
 		}
 
-		fmt.Printf("安悬: %s\n", reply)
+		fmt.Printf("Bot: %s\n", reply)
 	}
 }
