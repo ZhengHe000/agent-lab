@@ -28,4 +28,10 @@ var (
 
 	// ErrOpenWorkspace 打开工作区失败
 	ErrOpenWorkspace = errors.New("Failed to open the workspace")
+
+	// ErrUnsupportedFileType 路径下不是合法文本文件
+	ErrUnsupportedFileType = errors.New("unsupported text file type")
+
+	// ErrSymlinkPath 路径包含符号链接
+	ErrSymlinkPath = errors.New("symbolic links are not allowed")
 )

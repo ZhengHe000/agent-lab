@@ -32,9 +32,6 @@ const ( // 默认条件
 
 	// workspaceDir 受控工作区。
 	workspaceDir = `./AIWorkspace`
-
-	// maxReadBytes 单次的最大字节数。
-	maxReadBytes = 40_000
 )
 
 func validateContent(content string) error { // validateContent 判断内容合法性
