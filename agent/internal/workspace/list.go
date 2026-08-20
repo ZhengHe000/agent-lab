@@ -8,7 +8,7 @@ import (
 
 const (
 	maxListEntries = 2_000
-	maxListedFile  = 500
+	maxListedFiles = 500
 )
 
 type TextFileList struct {
@@ -51,11 +51,11 @@ func (w *Workspace) ListTextFiles(
 				return fs.SkipAll
 			}
 
-			if entry.IsDir() {
+			if entry.Type()&fs.ModeSymlink != 0 {
 				return nil
 			}
 
-			if entry.Type()&fs.ModeSymlink != 0 {
+			if entry.IsDir() {
 				return nil
 			}
 
@@ -76,7 +76,7 @@ func (w *Workspace) ListTextFiles(
 				return nil
 			}
 
-			if len(result.Paths) > maxListedFile {
+			if len(result.Paths) >= maxListedFiles {
 				result.Truncated = true
 				return fs.SkipAll
 			}
