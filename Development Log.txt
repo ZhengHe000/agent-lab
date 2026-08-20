@@ -2,12 +2,14 @@
 
 8/20:
 
-workspace 包下工具的具体实现应放在单独文件, 而不是堆在workspace.go里, 避免最后杂乱.
+workspace 包下工具的具体实现应放在单独文件, 而不是堆在workspace.go里, 避免最后杂乱,
 例如单独创建 read.go 作为底层实现, 再创建 read_text_file_tool.go 作为满足Tool接口的正式工具.
-read.go 或 write.go 它们都实现 Workspace 的方法: ` func(w *Workspace) ReadTextFile(){..} `
 
-` read_text_file_tool.go ` 这个格式的文件是满足Tool接口的工具文件
-` read.go ` 则是底层能力实现的文件
+read.go 等底层实现必须作为 Workspace 的方法,
+例如 read.go 的函数签名: ` func(w *Workspace) ReadTextFile(input string){..} `.
+
+` read_text_file_tool.go ` 这个格式的文件是满足Tool接口的工具文件.
+` read.go ` 则是底层能力实现的文件.
 
 第一版的时候工具实现全都堆在` file.tool.go `里了, 这几天升级工具, 里面的内容就可以渐渐删除了,
 还有一堆测试要删了重写, 好麻烦.

@@ -68,9 +68,15 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("create read_text_file tool: %w", err)
 	}
+
+	listTextFilesTool, err := workspace.NewListTextFilesTool(projectWorkspace)
+	if err != nil {
+		return fmt.Errorf("create list_text_files tool: %w", err)
+	}
+
 	toolsRegistry, err := tool.NewRegistry(
 		readTextFileTool,
-		workspace.NewListTextFilesTool(),
+		listTextFilesTool,
 		writeTextFileTool,
 	)
 

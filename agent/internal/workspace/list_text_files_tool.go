@@ -11,20 +11,18 @@ import (
 
 // ListTextFilesTool 列出受控工作区中的可读取文本文件。
 type ListTextFilesTool struct {
-	dir string
+	workspace *Workspace
 }
 
 // NewListTextFilesTool 创建使用正式工作区的文件列表工具。
-func NewListTextFilesTool() *ListTextFilesTool {
-	return &ListTextFilesTool{
-		dir: DefaultDir,
+func NewListTextFilesTool(workspace *Workspace) (*ListTextFilesTool, error) {
+	if workspace == nil || workspace.root == nil {
+		return nil, fmt.Errorf("create list_text_file tool: workspace is nil")
 	}
-}
 
-func newListTextFilesToolInDir(dir string) *ListTextFilesTool {
 	return &ListTextFilesTool{
-		dir: dir,
-	}
+		workspace: workspace,
+	}, nil
 }
 
 var listTextFilesParameters = json.RawMessage(`{
@@ -44,22 +42,26 @@ func (l *ListTextFilesTool) Definition() model.ToolDefinition {
 
 func (l *ListTextFilesTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("列出文件前上下文已结束: %w", err)
+		return "", fmt.Errorf("context canceled before tool execution: %w", err)
 	}
 
 	var args struct{}
 	if err := json.Unmarshal(arguments, &args); err != nil {
-		return "", fmt.Errorf("解析 list_text_files 参数失败: %w", err)
+		return "", fmt.Errorf("parse list_text_files arguments: %w", err)
 	}
 
-	files, err := listTextFilesInDir(l.dir)
+	got, err := l.workspace.ListTextFiles(ctx)
 	if err != nil {
-		return "", fmt.Errorf("执行 list_text_files 失败: %w", err)
+		return "", fmt.Errorf("execute ListTextFiles(ctx): %w", err)
 	}
 
-	result, err := json.Marshal(files)
+	result, err := json.Marshal(got)
 	if err != nil {
-		return "", fmt.Errorf("编码 list_text_files 执行结果失败: %w", err)
+		return "", fmt.Errorf("marshal ListTextFiles(ctx).got: %w", err)
+	}
+
+	if err := ctx.Err(); err != nil {
+		return "", fmt.Errorf("context canceled before result returned: %w", err)
 	}
 
 	return string(result), nil
