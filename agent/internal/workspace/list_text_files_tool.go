@@ -17,7 +17,7 @@ type ListTextFilesTool struct {
 // NewListTextFilesTool 创建使用正式工作区的文件列表工具。
 func NewListTextFilesTool(workspace *Workspace) (*ListTextFilesTool, error) {
 	if workspace == nil || workspace.root == nil {
-		return nil, fmt.Errorf("create list_text_file tool: workspace is nil")
+		return nil, fmt.Errorf("create list_text_files tool: workspace is nil")
 	}
 
 	return &ListTextFilesTool{
@@ -34,10 +34,17 @@ var listTextFilesParameters = json.RawMessage(`{
 func (l *ListTextFilesTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "list_text_files",
-		Description: "列出受控工作区中所有可读取的文本文件名." +
-			"当用户没有给出准确文件名，或需要了解工作区有哪些文件时使用.",
+		Description: "Recursively list workspace-relative paths for supported regular text files " +
+			"in the controlled workspace. Use this tool to discover available files when the exact " +
+			"path is unknown or before reading, searching, or editing files. The result indicates " +
+			"whether the listing was truncated by safety limits.",
 		Parameters: listTextFilesParameters,
 	}
+}
+
+type listTextFilesResponse struct {
+	Paths     []string `json:"paths"`
+	Truncated bool     `json:"truncated"`
 }
 
 func (l *ListTextFilesTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {
@@ -50,12 +57,17 @@ func (l *ListTextFilesTool) Execute(ctx context.Context, arguments json.RawMessa
 		return "", fmt.Errorf("parse list_text_files arguments: %w", err)
 	}
 
-	got, err := l.workspace.ListTextFiles(ctx)
+	fileList, err := l.workspace.ListTextFiles(ctx)
 	if err != nil {
 		return "", fmt.Errorf("execute ListTextFiles(ctx): %w", err)
 	}
 
-	result, err := json.Marshal(got)
+	response := listTextFilesResponse{
+		Paths:     fileList.Paths,
+		Truncated: fileList.Truncated,
+	}
+
+	encoded, err := json.Marshal(response)
 	if err != nil {
 		return "", fmt.Errorf("marshal ListTextFiles(ctx).got: %w", err)
 	}
@@ -64,7 +76,7 @@ func (l *ListTextFilesTool) Execute(ctx context.Context, arguments json.RawMessa
 		return "", fmt.Errorf("context canceled before result returned: %w", err)
 	}
 
-	return string(result), nil
+	return string(encoded), nil
 }
 
 var _ tool.Tool = (*ListTextFilesTool)(nil)
