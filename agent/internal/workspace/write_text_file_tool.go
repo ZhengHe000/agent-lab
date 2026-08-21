@@ -72,9 +72,12 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 		return "", fmt.Errorf("写入文件前上下文已经结束: %w", err)
 	}
 
-	var args writeTextFileArguments
-	if err := json.Unmarshal(arguments, &args); err != nil {
-		return "", fmt.Errorf("解析 write_text_file 参数失败: %w", err)
+	args, err := tool.DecodeObjectArguments[writeTextFileArguments](arguments)
+	if err != nil {
+		return "", fmt.Errorf(
+			"parse write_text_file arguments: %w",
+			err,
+		)
 	}
 
 	if err := validateFilename(args.Filename); err != nil {

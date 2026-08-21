@@ -52,9 +52,12 @@ func (l *ListTextFilesTool) Execute(ctx context.Context, arguments json.RawMessa
 		return "", fmt.Errorf("context canceled before tool execution: %w", err)
 	}
 
-	var args struct{}
-	if err := json.Unmarshal(arguments, &args); err != nil {
-		return "", fmt.Errorf("parse list_text_files arguments: %w", err)
+	_, err := tool.DecodeObjectArguments[struct{}](arguments)
+	if err != nil {
+		return "", fmt.Errorf(
+			"parse list_text_files arguments: %w",
+			err,
+		)
 	}
 
 	fileList, err := l.workspace.ListTextFiles(ctx)

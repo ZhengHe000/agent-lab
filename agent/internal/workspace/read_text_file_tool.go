@@ -55,9 +55,12 @@ func (r *ReadTextFileTool) Execute(ctx context.Context, arguments json.RawMessag
 		return "", fmt.Errorf("context canceled before tool execution: %w", err)
 	}
 
-	var args readTextFileArguments
-	if err := json.Unmarshal(arguments, &args); err != nil {
-		return "", fmt.Errorf("parse read_text_file arguments: %w", err)
+	args, err := tool.DecodeObjectArguments[readTextFileArguments](arguments)
+	if err != nil {
+		return "", fmt.Errorf(
+			"parse read_text_file arguments: %w",
+			err,
+		)
 	}
 
 	content, err := r.workspace.ReadTextFile(args.Path)
