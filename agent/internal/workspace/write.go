@@ -150,7 +150,7 @@ func (w *Workspace) replaceTextFile(
 	localPath string,
 	content []byte,
 	perm os.FileMode,
-) (returnErr error) {
+) error {
 	file, tempPath, err := w.createTemporaryTextFile(localPath, perm)
 	if err != nil {
 		return fmt.Errorf(
