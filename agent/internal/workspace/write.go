@@ -18,7 +18,11 @@ type ByteTooLongError struct {
 }
 
 func (t *ByteTooLongError) Error() string {
-	return fmt.Sprintf("内容过长, 限制 %d 字节, 当前 %d 字节", t.limit, t.actual)
+	return fmt.Sprintf(
+		"content exceeds byte limit: limit %d, actual %d",
+		t.limit,
+		t.actual,
+	)
 }
 
 type RuneTooLongError struct {
@@ -27,7 +31,11 @@ type RuneTooLongError struct {
 }
 
 func (r *RuneTooLongError) Error() string {
-	return fmt.Sprintf("内容过长, 限制 %d 字符, 当前 %d 字符", r.limit, r.actual)
+	return fmt.Sprintf(
+		"content exceeds character limit: limit %d, actual %d",
+		r.limit,
+		r.actual,
+	)
 }
 
 const (
