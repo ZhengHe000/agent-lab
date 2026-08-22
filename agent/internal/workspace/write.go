@@ -92,12 +92,12 @@ func (w *Workspace) inspectWriteTarget(
 	return info.Mode().Perm(), nil
 }
 
-func randomTomporarySuffix() (string, error) {
+func randomTemporarySuffix() (string, error) {
 	var data [8]byte
 
 	if _, err := rand.Read(data[:]); err != nil {
 		return "", fmt.Errorf(
-			"generate tomporary file suffix: %w",
+			"generate temporary file suffix: %w",
 			err,
 		)
 	}
@@ -113,7 +113,7 @@ func (w *Workspace) createTemporaryTextFile(
 	baseName := filepath.Base(targetPath)
 
 	for range 8 {
-		suffix, err := randomTomporarySuffix()
+		suffix, err := randomTemporarySuffix()
 		if err != nil {
 			return nil, "", err
 		}
