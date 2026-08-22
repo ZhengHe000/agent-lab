@@ -1,0 +1,264 @@
+package workspace
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"errors"
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
+	"unicode/utf8"
+)
+
+type ByteTooLongError struct {
+	limit  int
+	actual int
+}
+
+func (t *ByteTooLongError) Error() string {
+	return fmt.Sprintf("内容过长, 限制 %d 字节, 当前 %d 字节", t.limit, t.actual)
+}
+
+type RuneTooLongError struct {
+	limit  int
+	actual int
+}
+
+func (r *RuneTooLongError) Error() string {
+	return fmt.Sprintf("内容过长, 限制 %d 字符, 当前 %d 字符", r.limit, r.actual)
+}
+
+const (
+	maxWriteRunes = 10_000
+	maxWriteBytes = 40_000
+)
+
+func validateTextFileContent(content string) error { // validateContent 判断内容合法性
+
+	if strings.TrimSpace(content) == "" {
+		return ErrContentEmpty
+	}
+
+	if characterCount := utf8.RuneCountInString(content); characterCount > maxWriteRunes {
+		return &RuneTooLongError{
+			limit:  maxWriteRunes,
+			actual: characterCount,
+		}
+	}
+
+	if len(content) > maxWriteBytes {
+		return &ByteTooLongError{
+			limit:  maxWriteBytes,
+			actual: len(content),
+		}
+	}
+
+	return nil
+}
+
+func (w *Workspace) inspectWriteTarget(
+	localPath string,
+) (os.FileMode, error) {
+	info, err := w.root.Lstat(localPath)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return 0o644, nil
+		}
+
+		return 0, fmt.Errorf(
+			"inspect write target: %q: %w",
+			localPath,
+			err,
+		)
+	}
+
+	if info.Mode()&os.ModeSymlink != 0 {
+		return 0, fmt.Errorf(
+			"inspect write target: %q: %w",
+			localPath,
+			ErrSymlinkPath,
+		)
+	}
+
+	if !info.Mode().IsRegular() {
+		return 0, fmt.Errorf(
+			"write target %q is not a regular file",
+			localPath,
+		)
+	}
+
+	return info.Mode().Perm(), nil
+}
+
+func randomTomporarySuffix() (string, error) {
+	var data [8]byte
+
+	if _, err := rand.Read(data[:]); err != nil {
+		return "", fmt.Errorf(
+			"generate tomporary file suffix: %w",
+			err,
+		)
+	}
+
+	return hex.EncodeToString(data[:]), nil
+}
+
+func (w *Workspace) createTemporaryTextFile(
+	targetPath string,
+	perm os.FileMode,
+) (*os.File, string, error) {
+	parentDir := filepath.Dir(targetPath)
+	baseName := filepath.Base(targetPath)
+
+	for range 8 {
+		suffix, err := randomTomporarySuffix()
+		if err != nil {
+			return nil, "", err
+		}
+
+		tempName := "." + baseName + ".tmp-" + suffix
+		tempPath := filepath.Join(parentDir, tempName)
+
+		file, err := w.root.OpenFile(
+			tempPath,
+			os.O_WRONLY|os.O_CREATE|os.O_EXCL,
+			perm,
+		)
+
+		if err == nil {
+			return file, tempPath, nil
+		}
+
+		if !errors.Is(err, fs.ErrExist) {
+			return nil, "", fmt.Errorf(
+				"create temporary file %q: %w",
+				tempPath,
+				err,
+			)
+		}
+	}
+
+	return nil, "", fmt.Errorf(
+		"create temporary file for %q: name collisions exceeded limit",
+		targetPath,
+	)
+}
+
+func (w *Workspace) replaceTextFile(
+	localPath string,
+	content []byte,
+	perm os.FileMode,
+) (returnErr error) {
+	file, tempPath, err := w.createTemporaryTextFile(localPath, perm)
+	if err != nil {
+		return fmt.Errorf(
+			"create temporary file %q: %w",
+			localPath,
+			err,
+		)
+	}
+
+	renamed := false
+	defer func() {
+		if !renamed {
+			_ = w.root.Remove(tempPath)
+		}
+	}()
+
+	if _, err := file.Write(content); err != nil {
+		return fmt.Errorf(
+			"write temporary file %q: %w",
+			tempPath,
+			err,
+		)
+	}
+
+	if err := file.Sync(); err != nil {
+		return fmt.Errorf(
+			"sync temprary file %q: %w",
+			tempPath,
+			err,
+		)
+	}
+
+	if err := file.Close(); err != nil {
+		return fmt.Errorf(
+			"close temporary file %q: %w",
+			tempPath,
+			err,
+		)
+	}
+
+	if err := w.root.Rename(tempPath, localPath); err != nil {
+		return fmt.Errorf(
+			"rename text file %q: %w",
+			tempPath,
+			err,
+		)
+	}
+
+	renamed = true
+	return nil
+}
+
+func (w *Workspace) WriteTextFile(
+	input string,
+	content string,
+) error {
+	toolPath, err := validateToolPath(input)
+	if err != nil {
+		return fmt.Errorf(
+			"validate write path %q: %w",
+			input,
+			err,
+		)
+	}
+
+	if !isAllowedTextFile(toolPath) {
+		return fmt.Errorf(
+			"validate write path %q: %w",
+			toolPath,
+			err,
+		)
+	}
+
+	if err := validateTextFileContent(content); err != nil {
+		return fmt.Errorf(
+			"validate text file content: %w",
+			err,
+		)
+	}
+
+	localPath, err := localizeToolPath(toolPath)
+	if err != nil {
+		return err
+	}
+
+	parentDir := filepath.Dir(localPath)
+	if parentDir != "." {
+		if err := w.root.MkdirAll(parentDir, 0o755); err != nil {
+			return fmt.Errorf(
+				"create parent directory %q: %w",
+				parentDir,
+				err,
+			)
+		}
+
+		if err := w.rejectSymlinkPath(parentDir); err != nil {
+			return err
+		}
+	}
+
+	perm, err := w.inspectWriteTarget(localPath)
+	if err != nil {
+		return err
+	}
+
+	return w.replaceTextFile(
+		localPath,
+		[]byte(content),
+		perm,
+	)
+}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/ZhengHeOwo/agent-AnXuan/agent/internal/model"
@@ -13,18 +12,14 @@ import (
 
 // WriteTextFileTool 经用户确认后，在受控工作区中创建或覆盖文本文件。
 type WriteTextFileTool struct {
-	dir       string
+	workspace *Workspace
 	confirmer tool.Confirmer
 }
 
 // NewWriteTextFileTool 创建使用正式工作区的文本写入工具。
-func NewWriteTextFileTool(confirmer tool.Confirmer) (*WriteTextFileTool, error) {
-	return newWriteTextFileTool(DefaultDir, confirmer)
-}
-
-func newWriteTextFileTool(dir string, confirmer tool.Confirmer) (*WriteTextFileTool, error) {
-	if strings.TrimSpace(dir) == "" {
-		return nil, fmt.Errorf("写入工具工作区目录不能为空")
+func NewWriteTextFileTool(workspace *Workspace, confirmer tool.Confirmer) (*WriteTextFileTool, error) {
+	if workspace == nil || workspace.root == nil {
+		return nil, fmt.Errorf("create read_text_file tool: workspace is nil")
 	}
 
 	if confirmer == nil {
@@ -32,7 +27,7 @@ func newWriteTextFileTool(dir string, confirmer tool.Confirmer) (*WriteTextFileT
 	}
 
 	return &WriteTextFileTool{
-		dir:       dir,
+		workspace: workspace,
 		confirmer: confirmer,
 	}, nil
 }
@@ -69,7 +64,7 @@ func (t *WriteTextFileTool) Definition() model.ToolDefinition {
 
 func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessage) (string, error) {
 	if err := ctx.Err(); err != nil {
-		return "", fmt.Errorf("写入文件前上下文已经结束: %w", err)
+		return "", fmt.Errorf("context canceled before tool execution: %w", err)
 	}
 
 	args, err := tool.DecodeObjectArguments[writeTextFileArguments](arguments)
@@ -78,14 +73,6 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 			"parse write_text_file arguments: %w",
 			err,
 		)
-	}
-
-	if err := validateFilename(args.Filename); err != nil {
-		return "", fmt.Errorf("write_text_file 文件名无效: %w", err)
-	}
-
-	if err := validateContent(args.Content); err != nil {
-		return "", fmt.Errorf("write_text_file 内容无效: %w", err)
 	}
 
 	confirmed, err := t.confirmer.Confirm(
@@ -103,22 +90,29 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 	)
 
 	if err != nil {
-		return "", fmt.Errorf("确认 write_text_file 操作失败: %w", err)
+		return "", fmt.Errorf("Authorization write text file operation failed: %w", err)
 	}
 
 	if !confirmed {
 		return fmt.Sprintf(
-			"用户拒绝写入文件 %s, 未执行任何修改",
+			"The write file %s operation was rejected, No modifications were made",
 			args.Filename,
 		), nil
 	}
 
-	_, err = writeTextFileInDir(t.dir, args.Filename, args.Content)
-	if err != nil {
-		return "", fmt.Errorf("执行 write_text_file 失败: %w", err)
+	if err = t.workspace.WriteTextFile(args.Filename, args.Content); err != nil {
+		return "", fmt.Errorf(
+			"write text file %q: %w",
+			args.Filename,
+			err,
+		)
 	}
 
-	return fmt.Sprintf("已成功写入文件 %q", args.Filename), nil
+	if err := ctx.Err(); err != nil {
+		return "", fmt.Errorf("context canceled before result returned: %w", err)
+	}
+
+	return fmt.Sprintf("File %q written successfully", args.Filename), nil
 }
 
 var _ tool.Tool = (*WriteTextFileTool)(nil)

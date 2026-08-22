@@ -47,11 +47,6 @@ func run() error {
 		return fmt.Errorf("客户端配置失败: %w", err)
 	}
 
-	writeTextFileTool, err := workspace.NewWriteTextFileTool(console)
-	if err != nil {
-		return fmt.Errorf("创建文本写入工具失败: %w", err)
-	}
-
 	if err := os.MkdirAll(workspace.DefaultDir, 0o700); err != nil {
 		return fmt.Errorf("create workspace directory %q: %w", workspace.DefaultDir, err)
 	}
@@ -72,6 +67,11 @@ func run() error {
 	listTextFilesTool, err := workspace.NewListTextFilesTool(projectWorkspace)
 	if err != nil {
 		return fmt.Errorf("create list_text_files tool: %w", err)
+	}
+
+	writeTextFileTool, err := workspace.NewWriteTextFileTool(projectWorkspace, console)
+	if err != nil {
+		return fmt.Errorf("create write_text_file tool: %w", err)
 	}
 
 	toolsRegistry, err := tool.NewRegistry(
