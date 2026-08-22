@@ -160,8 +160,13 @@ func (w *Workspace) replaceTextFile(
 		)
 	}
 
+	fileClosed := false
 	renamed := false
 	defer func() {
+		if !fileClosed {
+			_ = file.Close()
+		}
+
 		if !renamed {
 			_ = w.root.Remove(tempPath)
 		}
@@ -177,7 +182,7 @@ func (w *Workspace) replaceTextFile(
 
 	if err := file.Sync(); err != nil {
 		return fmt.Errorf(
-			"sync temprary file %q: %w",
+			"sync temporary file %q: %w",
 			tempPath,
 			err,
 		)
@@ -190,6 +195,7 @@ func (w *Workspace) replaceTextFile(
 			err,
 		)
 	}
+	fileClosed = true
 
 	if err := w.root.Rename(tempPath, localPath); err != nil {
 		return fmt.Errorf(
@@ -203,13 +209,13 @@ func (w *Workspace) replaceTextFile(
 	return nil
 }
 
-func (w *Workspace) WriteTextFile(
+func (w *Workspace) validateTextFileWrite(
 	input string,
 	content string,
-) error {
+) (string, error) {
 	toolPath, err := validateToolPath(input)
 	if err != nil {
-		return fmt.Errorf(
+		return "", fmt.Errorf(
 			"validate write path %q: %w",
 			input,
 			err,
@@ -217,18 +223,30 @@ func (w *Workspace) WriteTextFile(
 	}
 
 	if !isAllowedTextFile(toolPath) {
-		return fmt.Errorf(
+		return "", fmt.Errorf(
 			"validate write path %q: %w",
 			toolPath,
-			err,
+			ErrUnsupportedFileType,
 		)
 	}
 
 	if err := validateTextFileContent(content); err != nil {
-		return fmt.Errorf(
+		return "", fmt.Errorf(
 			"validate text file content: %w",
 			err,
 		)
+	}
+
+	return toolPath, nil
+}
+
+func (w *Workspace) WriteTextFile(
+	input string,
+	content string,
+) error {
+	toolPath, err := w.validateTextFileWrite(input, content)
+	if err != nil {
+		return err
 	}
 
 	localPath, err := localizeToolPath(toolPath)

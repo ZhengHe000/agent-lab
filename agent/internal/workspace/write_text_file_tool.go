@@ -19,7 +19,7 @@ type WriteTextFileTool struct {
 // NewWriteTextFileTool 创建使用正式工作区的文本写入工具。
 func NewWriteTextFileTool(workspace *Workspace, confirmer tool.Confirmer) (*WriteTextFileTool, error) {
 	if workspace == nil || workspace.root == nil {
-		return nil, fmt.Errorf("create read_text_file tool: workspace is nil")
+		return nil, fmt.Errorf("create write_text_file tool: workspace is nil")
 	}
 
 	if confirmer == nil {
@@ -33,31 +33,33 @@ func NewWriteTextFileTool(workspace *Workspace, confirmer tool.Confirmer) (*Writ
 }
 
 type writeTextFileArguments struct {
-	Filename string `json:"filename"`
-	Content  string `json:"content"`
+	Path    string `json:"path"`
+	Content string `json:"content"`
 }
 
 var writeTextFileParameters = json.RawMessage(`{
 "type": "object",
 "properties": {
-"filename":{
+"path":{
 "type": "string",
-"description": "要创建或覆盖的文本文件名, 例如 note.txt"
+"description": "Workspace-relative text file path using '/' separators, for example internal/config/config.go"
 },
 "content": {
 "type": "string",
-"description": "要写入文件的完整文本内容"
+"description": "Complete text content to write to the file"
 	}
 },
-"required":["filename", "content"],
+"required":["path", "content"],
 "additionalProperties": false
 }`)
 
 func (t *WriteTextFileTool) Definition() model.ToolDefinition {
 	return model.ToolDefinition{
 		Name: "write_text_file",
-		Description: "经过用户明确确认后, 在受控工作区中创建或覆盖文本文件." +
-			"仅当用户要求保存或创建或修改文件内容时使用",
+		Description: "Create or replace a supported regular text file in the controlled workspace " +
+			"using a workspace-relative path. Use this tool only when the user has requested a file " +
+			"change. The proposed path and complete content are shown for confirmation before any " +
+			"file modification is performed.",
 		Parameters: writeTextFileParameters,
 	}
 }
@@ -75,11 +77,19 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 		)
 	}
 
+	toolPath, err := t.workspace.validateTextFileWrite(args.Path, args.Content)
+	if err != nil {
+		return "", fmt.Errorf(
+			"validate write_text_file arguments: %w",
+			err,
+		)
+	}
+
 	confirmed, err := t.confirmer.Confirm(
 		ctx,
 		tool.ConfirmationRequest{
 			Action:  "write_text_file",
-			Summary: fmt.Sprintf("创建或覆盖文件 %s", args.Filename),
+			Summary: fmt.Sprintf("创建或覆盖文件 %s", toolPath),
 			Details: fmt.Sprintf(
 				"内容长度: %d 字符, %d 字节\n\n内容:\n%s",
 				utf8.RuneCountInString(args.Content),
@@ -96,14 +106,14 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 	if !confirmed {
 		return fmt.Sprintf(
 			"The write file %s operation was rejected, No modifications were made",
-			args.Filename,
+			toolPath,
 		), nil
 	}
 
-	if err = t.workspace.WriteTextFile(args.Filename, args.Content); err != nil {
+	if err = t.workspace.WriteTextFile(toolPath, args.Content); err != nil {
 		return "", fmt.Errorf(
 			"write text file %q: %w",
-			args.Filename,
+			toolPath,
 			err,
 		)
 	}
@@ -112,7 +122,7 @@ func (t *WriteTextFileTool) Execute(ctx context.Context, arguments json.RawMessa
 		return "", fmt.Errorf("context canceled before result returned: %w", err)
 	}
 
-	return fmt.Sprintf("File %q written successfully", args.Filename), nil
+	return fmt.Sprintf("File %q written successfully", toolPath), nil
 }
 
 var _ tool.Tool = (*WriteTextFileTool)(nil)
