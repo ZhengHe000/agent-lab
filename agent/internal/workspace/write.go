@@ -35,7 +35,7 @@ const (
 	maxWriteBytes = 40_000
 )
 
-func validateTextFileContent(content string) error { // validateContent 判断内容合法性
+func validateTextFileContent(content string) error {
 
 	if strings.TrimSpace(content) == "" {
 		return ErrContentEmpty

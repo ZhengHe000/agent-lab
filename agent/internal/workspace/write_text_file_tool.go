@@ -23,7 +23,9 @@ func NewWriteTextFileTool(workspace *Workspace, confirmer tool.Confirmer) (*Writ
 	}
 
 	if confirmer == nil {
-		return nil, fmt.Errorf("写入工具确认器不能为空")
+		return nil, fmt.Errorf(
+			"create write_text_file tool: confirmer is nil",
+		)
 	}
 
 	return &WriteTextFileTool{
